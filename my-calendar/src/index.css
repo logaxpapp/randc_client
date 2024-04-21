@@ -1,0 +1,28 @@
+/* For standard CSS, you would use media queries like this:
+@media (max-width: 640px) {
+  .fc-header-toolbar {
+    flex-direction: column;
+  }
+}
+*/
+
+/* With TailwindCSS in the component */
+
+  /* Include this within your global styles or component if using CSS-in-JS */
+  @media (max-width: 640px) {
+    .fc-header-toolbar > .fc-toolbar-chunk {
+      display: block;
+      margin-bottom: 1rem;
+    }
+  }
+
+
+
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+

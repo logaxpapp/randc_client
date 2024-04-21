@@ -1,0 +1,17 @@
+import React from 'react';
+
+const DeleteSubscriptionModal = ({ isOpen, onClose, onDeletePlan, planId }) => {
+  return (
+    <div className={`fixed inset-0 flex items-center justify-center ${isOpen ? '' : 'hidden'}`}>
+      <div className="absolute inset-0 bg-gray-900 opacity-75" onClick={onClose}></div>
+      <div className="bg-white p-8 rounded-md shadow-lg">
+        <h2 className="text-xl mb-4">Delete Subscription Plan</h2>
+        <p>Are you sure you want to delete this subscription plan?</p>
+        <button onClick={() => onDeletePlan(planId)} className="bg-red-500 text-white px-4 py-2 rounded-md">Delete Plan</button>
+        <button onClick={onClose} className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md ml-2">Cancel</button>
+      </div>
+    </div>
+  );
+};
+
+export default DeleteSubscriptionModal;

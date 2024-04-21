@@ -1,0 +1,27 @@
+/* Default style */
+.fc .fc-toolbar-title {
+    font-size: 1.25rem; /* Larger title */
+  }
+  
+  /* Mobile style */
+  @media (max-width: 768px) {
+    .fc-header-toolbar {
+      flex-direction: column;
+    }
+    
+    .fc .fc-toolbar-title {
+      font-size: 1rem; /* Smaller title for mobile */
+      
+    }
+   .event-title {
+      font-size: 1rem; /* Smaller title for mobile */
+    }
+  
+    .fc .fc-button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem; /* Spacing between buttons */
+     
+    }
+  }
+  
