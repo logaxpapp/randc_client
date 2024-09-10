@@ -3,13 +3,11 @@ import { AiOutlineCalendar, AiOutlineShoppingCart, AiOutlineAreaChart, AiOutline
 import { FiShoppingBag, FiEdit, FiPieChart } from 'react-icons/fi';
 import { BsKanban, BsBarChart, BsColumnsGap } from 'react-icons/bs';
 import { BiColorFill } from 'react-icons/bi';
-import { IoMdContacts } from 'react-icons/io';
-import { RiContactsLine, RiStockLine } from 'react-icons/ri';
+
+import {  RiStockLine } from 'react-icons/ri';
 import { GiLouvrePyramid } from 'react-icons/gi';
-import ViewListIcon from '@mui/icons-material/ViewList';
-import ListAltIcon from '@mui/icons-material/ListAlt';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import AssignmentIcon from '@mui/icons-material/Assignment';
+
+
 
 
 export const links = [
@@ -17,7 +15,7 @@ export const links = [
       title: 'Project',
       links: [
         {
-          name: 'Dashboard',
+          name: 'Events',
           url: '',
           icon: <AiOutlineCalendar />,
         },
@@ -27,67 +25,37 @@ export const links = [
           icon: <FiShoppingBag />,
         },
         {
-          name: 'Statistics',
-          url: 'statistics',
-          icon: <GiLouvrePyramid />,
-        },
-        {
           name: 'Projects',
           url: 'recent-projects',
           icon: <BiColorFill />,
         },
         {
-          name: 'Create New Project',
+          name: 'New Project',
         url: 'create-project',
         icon: <GiLouvrePyramid />,
         }
       ],
     },
   
-    {
-      title: 'Pages',
-      links: [
-        {
-          name: 'orders',
 
-          icon: <AiOutlineShoppingCart />,
-        },
-        {
-          name: 'employees',
-          icon: <IoMdContacts />,
-        },
-        {
-          name: 'customers',
-          icon: <RiContactsLine />,
-        },
-      ],
-    },
     {
       title: 'Tasks',
       links: [
         {
           name: 'create-task',
           url: 'create-task',
-          icon: <ListAltIcon />,
-        },
-        {
-          name: 'tasklist',
-          icon: <ViewListIcon />,
+          icon: <AiOutlineShoppingCart />,
         },
         {
           name: 'Issueboard',
           url: 'issueboard',
-          icon: <DashboardIcon />,
-        },
-        {
-          name: 'taskdetails',
-          icon: <AssignmentIcon />,
+          icon: <BsBarChart />,
         },
       ],
     },
    
     {
-      title: 'Apps',
+      title: 'Board',
       links: [
        
         {
@@ -100,12 +68,7 @@ export const links = [
           url: 'scrum',
           icon:  <BsColumnsGap />,
         },
-        {
-          name: 'scrumlist',
-          url: 'scrum-list',
-          icon:  <BsColumnsGap />,
-        },
-        {
+     {
           name: 'editor',
           icon: <FiEdit />,
         },
@@ -116,38 +79,62 @@ export const links = [
       title: 'Reports',
       links: [
         {
-          name: 'line',
+          name: 'Activity',
+          url: 'activity-report',
           icon: <AiOutlineStock />,
         },
         {
-          name: 'area',
+          name: 'Risk Analysis',
+          url: 'risk-analysis-report',
           icon: <AiOutlineAreaChart />,
         },
   
         {
-          name: 'bar',
+          name: 'Due Date Forecasting',
+          url: 'due-date-forecasting',
           icon: <AiOutlineBarChart />,
         },
         {
-          name: 'pie',
+          name: 'Priority Breakdown',
+          url: 'priority-breakdown-report',
+          icon: <AiOutlineBarChart />,
           icon: <FiPieChart />,
         },
         {
-          name: 'financial',
+          name: 'Work Load',
+          url: 'work-load-report',
           icon: <RiStockLine />,
         },
+      ],
+    },
+    {
+      title: 'Sprints',
+      links: [
         {
-          name: 'color-mapping',
-          icon: <BsBarChart />,
+          name: 'Sprints',
+          url: 'sprint-list',
+          icon: <AiOutlineCalendar />,
         },
         {
-          name: 'pyramid',
+          name: 'Create Sprint',
+          url: 'create-sprint',
+          icon: <FiShoppingBag />,
+        },
+        {
+          name: 'Sprint Tasks',
+          url: 'create-sprinttask',
           icon: <GiLouvrePyramid />,
         },
         {
-          name: 'stacked',
-          icon: <AiOutlineBarChart />,
+          name: 'Task List',
+          url: 'sprint_task',
+          icon: <BiColorFill />,
         },
+        {
+          name: 'Sprint Details',
+        url: 'create-project',
+        icon: <GiLouvrePyramid />,
+        }
       ],
     },
   ];

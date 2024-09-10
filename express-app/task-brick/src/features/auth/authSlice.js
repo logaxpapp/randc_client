@@ -42,7 +42,18 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    // Reducers such as setUserFromToken and logoutUser remain unchanged
+    setUserFromToken(state, action) {
+      const { user } = action.payload;
+      state.user = user;
+      state.isAuthenticated = true;
+    },
+    logoutUser(state) {
+      state.user = null;
+      state.isAuthenticated = false;
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+    },
+    // Other reducers...
   },
   extraReducers: (builder) => {
     builder

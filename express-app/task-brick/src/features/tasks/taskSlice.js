@@ -44,10 +44,9 @@ export const updateTask = createAsyncThunk(
   'tasks/updateTask',
   async ({ taskId, taskData }, { getState, rejectWithValue }) => {
     const { tenantId } = getState().auth.user;
-    console.log(taskId, taskData);
-    console.log(tenantId);
     try {
       const response = await axios.put(`/api/tenants/${tenantId}/tasks/${taskId}`, taskData);
+      console.log('UpdateTask Slice', response); // Log the response data for debugging purposes
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);

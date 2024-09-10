@@ -1,35 +1,81 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Paper, Typography, Box, Button, Grid } from '@mui/material';
 import { Doughnut, Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
 import { styled } from '@mui/material/styles';
 import useThemeSwitcher from '../themes/useThemeSwitcher';
 
-// Registering components for Chart.js
+import { useSelector, useDispatch } from 'react-redux';
+import { toast } from 'react-toastify';
+import CustomCircularProgress from '../global/CustomCircularProgress';
+import { fetchTasks, setSelectedIssueId } from '../../features/tasks/taskSlice';
 
-
-
-// Registering components for Chart.js
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
 
 function RecentProject() {
   const { currentTheme } = useThemeSwitcher();
+  const dispatch = useDispatch();
+  const { tasks, status: fetchStatus, error } = useSelector((state) => state.tasks);
+  const tenantId = useSelector((state) => state.auth.user?.tenantId);
+  const user = useSelector((state) => state.auth.user);
 
-  // Dummy data for the chart
+  useEffect(() => {
+    if (!tenantId) {
+      toast.error('Tenant ID not found. Please log in again.');
+      return;
+    }
+    dispatch(fetchTasks({ tenantId }));
+  }, [dispatch, tenantId]);
+
+  useEffect(() => {
+    if (tasks.length > 0) {
+      dispatch(setSelectedIssueId(tasks[0]._id));
+    }
+  }, [dispatch, tasks]);
+
+  const statusCounts = tasks.reduce((acc, task) => {
+    acc[task.status] = (acc[task.status] || 0) + 1;
+    return acc;
+  }, {});
+
+  const priorityCounts = tasks.reduce((acc, task) => {
+    acc[task.priority] = (acc[task.priority] || 0) + 1;
+    return acc;
+  }, {});
+
+  const priorityColors = [
+    'rgba(255, 99, 132, 0.2)', // High
+    'rgba(54, 162, 235, 0.2)', // Medium
+    'rgba(255, 206, 86, 0.2)', // Low
+    'rgba(75, 192, 192, 0.2)', // None
+    'rgba(153, 102, 255, 0.2)', // Critical
+    'rgba(255, 159, 64, 0.2)', // Blocker
+    'rgba(199, 199, 199, 0.2)', // Major
+    'rgba(83, 102, 255, 0.2)', // Minor
+    'rgba(40, 159, 64, 0.2)', // Trivial
+    'rgba(255, 99, 132, 0.2)' // Urgent
+  ];
+  
+  const priorityBorderColors = [
+    'rgba(255, 99, 132, 1)',
+    'rgba(54, 162, 235, 1)',
+    'rgba(255, 206, 86, 1)',
+    'rgba(75, 192, 192, 1)',
+    'rgba(153, 102, 255, 1)',
+    'rgba(255, 159, 64, 1)',
+    'rgba(199, 199, 199, 1)',
+    'rgba(83, 102, 255, 1)',
+    'rgba(40, 159, 64, 1)',
+    'rgba(255, 99, 132, 1)'
+  ];
+  
+
   const doughnutData = {
-    labels: ['To Do', 'Concepting', 'Design', 'Testing', 'Launch'],
+    labels: Object.keys(statusCounts),
     datasets: [
       {
-        label: 'Project Status',
-        data: [12, 19, 3, 5, 2],
+        label: 'Task Status',
+        data: Object.values(statusCounts),
         backgroundColor: [
           'rgba(255, 99, 132, 0.2)',
           'rgba(54, 162, 235, 0.2)',
@@ -50,24 +96,16 @@ function RecentProject() {
   };
 
   const barData = {
-    labels: ['Q1', 'Q2', 'Q3', 'Q4'],
-    datasets: [
-      {
-        label: 'Tasks Completed',
-        data: [50, 75, 110, 100],
-        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-        borderColor: 'rgba(54, 162, 235, 1)',
-        borderWidth: 1,
-      },
-      {
-        label: 'New Tasks',
-        data: [80, 100, 70, 90],
-        backgroundColor: 'rgba(255, 206, 86, 0.2)',
-        borderColor: 'rgba(255, 206, 86, 1)',
-        borderWidth: 1,
-      }
-    ],
+    labels: Object.keys(priorityCounts),
+    datasets: [{
+      label: 'Task Priority',
+      data: Object.values(priorityCounts),
+      backgroundColor: Object.keys(priorityCounts).map((_, index) => priorityColors[index % priorityColors.length]), // Cycle through colors if more priorities than colors
+      borderColor: Object.keys(priorityCounts).map((_, index) => priorityBorderColors[index % priorityBorderColors.length]),
+      borderWidth: 1
+    }]
   };
+  
 
   const options = {
     maintainAspectRatio: false,
@@ -78,24 +116,23 @@ function RecentProject() {
     },
   };
 
-  // Function to render a chart with given parameters
   const renderChart = (ChartComponent, data, options) => (
     <Box className="relative h-64 w-full">
       <ChartComponent data={data} options={options} />
     </Box>
   );
+
   const WelcomeBox = styled(Box)(({ theme }) => ({
     backgroundColor: theme.palette.background.paper,
     padding: theme.spacing(4),
     borderRadius: theme.shape.borderRadius,
   }));
 
-
   return (
     <Box className="p-6" style={{ backgroundColor: currentTheme.bgColor }}>
-     <WelcomeBox className="mb-4">
+      <WelcomeBox className="mb-4">
         <Typography variant="h4" gutterBottom>
-          Good Morning, Christopher
+          Good Morning, {user?.firstName}!
         </Typography>
         <Typography variant="subtitle1">
           Here's the latest update on your projects and tasks.
@@ -118,7 +155,6 @@ function RecentProject() {
             {renderChart(Bar, barData, options)}
           </Paper>
         </Grid>
-        {/* ... More Grid items for additional charts and features */}
       </Grid>
       <Box className="flex justify-between items-center bg-white p-4 rounded-md shadow-md mt-6">
         <Typography variant="h6">Recent Activities</Typography>

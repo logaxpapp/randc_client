@@ -21,6 +21,18 @@ import UpdateUserForm from '../users/UpdateUserForm';
 import UserList from '../users/UserList';
 import IssueBoard from '../tasks/IssueBoard';
 import { FilterProvider } from '../../context/useFilters';
+import TeamList from '../team/TeamList';
+import CreateSprintForm from '../sprints/CreateSprint';
+import SprintList from '../sprints/SprintList';
+import CreateSprintTask from '../sprints/CreateSprintTask';
+import SprintTaskList from '../sprints/SprintTaskList';
+import ActivityReport from '../reports/ActivityReport';
+import RiskAnalysisReport from '../reports/RiskAnalysisReport';
+import DueDateForecasting from '../reports/DueDateForecasting';
+import PriorityBreakdownReport from '../reports/PriorityBreakdownReport';
+import WorkLoadReport from '../reports/WorkLoadReport';
+import Upgrade from '../subscription/Upgrade';
+
 
 
 
@@ -44,7 +56,18 @@ const Dashboard = () => {
         <Route path="create-project" element={<CreateNewProject />} />
         <Route path="create-user" element={<CreateUserForm />} />
         <Route path="user-list" element={<UserList />} />
+        <Route path="team-list" element={<TeamList />} />
         <Route path="update-user/:userId" element={<UpdateUserForm />} />
+        <Route path="create-sprinttask" element={<CreateSprintTask />} />
+        <Route path="sprint_task" element={<SprintTaskList />} />
+        <Route path="activity-report" element={<ActivityReport />} />
+        <Route path="create-sprint" element={<CreateSprintForm />} />
+        <Route path="sprint-list" element={<SprintList />} />
+        <Route path="risk-analysis-report" element={<RiskAnalysisReport />} />
+        <Route path="due-date-forecasting" element={<DueDateForecasting />} />
+        <Route path="priority-breakdown-report" element={<PriorityBreakdownReport />} />
+        <Route path="work-load-report" element={<WorkLoadReport />} />
+        <Route path="upgrade" element={<Upgrade />} />
         <Route path="issueboard" element={
           <FilterProvider>
             <IssueBoard />

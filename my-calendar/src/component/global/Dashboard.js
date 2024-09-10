@@ -24,7 +24,7 @@ const Dashboard = () => {
       <div className="flex-grow bg-white">
         <header className="bg-gray-100 py-4 px-6 shadow flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
-          <button onClick={handleLogout} className="text-gray-800 hover:text-gray-900">Logout</button>
+          <button onClick={handleLogout} className="text-purple-900 font-serif font-bold hover:text-purple-500 hover:bg-white py-1 px-2 rounded-lg">Logout</button>
         </header>
 
         <main className="flex-grow p-4">

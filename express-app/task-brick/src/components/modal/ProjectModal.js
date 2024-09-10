@@ -35,7 +35,7 @@ const ProjectModal = ({ open, onClose }) => {
       <div className="relative max-w-4xl w-full bg-white rounded-lg shadow-lg p-6">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold">Recent Projects</h2>
-          <button onClick={onClose} className="text-gray-700 hover:text-gray-900">
+          <button onClick={onClose} className="text-red-700 font-bold text-xl hover:text-gray-900">
             <FontAwesomeIcon icon={faTimes} />
           </button>
         </div>
@@ -49,9 +49,9 @@ const ProjectModal = ({ open, onClose }) => {
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mt-4">
             {projects.slice(0, 8).map((project) => (
-              <div key={project._id} onClick={() => handleProjectClick(project._id)} className="cursor-pointer bg-white shadow-md rounded-md p-4 h-60 flex flex-col justify-between">
-                <h3 className="text-xl font-semibold">{project.name}</h3>
-                <p>Status: {project.status}</p>
+              <div key={project._id} onClick={() => handleProjectClick(project._id)} className="cursor-pointer bg-white shadow-md hover:bg-green-50 rounded-md p-4 h-60 flex flex-col justify-between">
+                <h3 className="text-lg font-semibold">{project.name}</h3>
+                <p className='hover:text-purple-500'>Status: {project.status}</p>
               </div>
             ))}
           </div>

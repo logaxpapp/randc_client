@@ -15,7 +15,7 @@
       margin-bottom: 1rem;
     }
   }
-
+  
 
 
 
@@ -25,4 +25,24 @@
 @tailwind utilities;
 
 
+
+.sarala-regular {
+  font-family: "Sarala", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+.sarala-bold {
+  font-family: "Sarala", sans-serif;
+  font-weight: 300;
+  font-style: normal;
+}
+.tawk-min-chat-icon {
+  fill: #f1f1ec;
+  animation-duration: .25s;
+  animation-name: iconAnimation;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
 

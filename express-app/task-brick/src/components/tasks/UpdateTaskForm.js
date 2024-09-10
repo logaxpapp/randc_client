@@ -6,6 +6,7 @@ import { fetchProjects } from '../../features/project/projectSlice';
 import { fetchUsers } from '../../features/user/userSlice';
 import { fetchTeams } from '../../features/team/teamSlice';
 import CustomCircularProgress from '../global/CustomCircularProgress';
+import { toast } from'react-toastify';
 
 const UpdateTaskForm = ({ open, onClose, taskId }) => {
   const [imageUrls, setImageUrls] = useState([]);
@@ -38,6 +39,7 @@ const UpdateTaskForm = ({ open, onClose, taskId }) => {
     imageUrls: [],
     tags: [],
     teamId: '',
+    parentId: '',
   });
 
 
@@ -51,20 +53,25 @@ const UpdateTaskForm = ({ open, onClose, taskId }) => {
     dispatch(fetchProjects({ tenantId }));
     dispatch(fetchUsers(tenantId));
     dispatch(fetchTeams(tenantId));
+
+     // Format the due date to YYYY-MM-DD
+    const formattedDueDate = task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '';
   
     // Set initial task details
     setTaskDetails({
+      ...taskDetails, // Keep the rest of the existing taskDetails state
       title: task.title || '',
       description: task.description || '',
       type: task.type || '',
       priority: task.priority || '',
       status: task.status || '',
-      projectId: task.projectId || '',
-      assigneeId: task.assigneeId || '',
-      dueDate: task.dueDate || '',
+      projectId: task?.projectId?._id || '', // Set projectId to the ID from the task object
+      assigneeId: task.assigneeId._id || '', // Set assigneeId to the ID from the task object
+      dueDate: formattedDueDate || '',
       summary: task.summary || '',
       tags: task.tags || [],
-      teamId: task.teamId || '',
+      teamId: task.teamId._id || '', // Set teamId to the ID from the task object
+      parentId: task.parentId || '', // parentId is assumed to be a direct ID
     });
   }, [task, tenantId, dispatch, fetchProjects, fetchUsers, fetchTeams]);
 
@@ -95,24 +102,46 @@ const UpdateTaskForm = ({ open, onClose, taskId }) => {
 };
 
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setLoading(true);
+const handleSubmit = async (event) => {
+  event.preventDefault();
+  setLoading(true);
 
-    const updatedTask = {
-      ...taskDetails,
-      taskId: taskId, // Assuming taskId is part of the taskDetails
-      tenantId: tenantId, // Assuming tenantId is part of the taskDetails
-    };
+  // Convert `projectId`, `assigneeId`, `reporterId`, `teamId` to the expected format
+  const formData = {
+    ...taskDetails,
+    imageUrls: imageUrls || [],
+    projectId: taskDetails.projectId || undefined, 
+    assigneeId: taskDetails.assigneeId || undefined, 
+    teamId: taskDetails.teamId || undefined,
+  };
 
-    // Dispatch action to update the task
-    dispatch(updateTask(updatedTask));
+  // Remove any properties that are empty strings, as they are not required and shouldn't be sent.
+  Object.keys(formData).forEach(key => {
+    if (formData[key] === '') {
+      delete formData[key];
+    }
+  });
+
+  try {
+    await dispatch(updateTask({ taskId, taskData: formData })).unwrap();
 
     // Navigate back to the Issue Board page after updating
     navigate("/dashboard/issueboard");
 
+    // Show a success toast message
+    toast.success("Task updated successfully!");
+  } catch (error) {
+    // Handle the error here by showing a toast message
+    console.error('Failed to update the task:', error);
+
+    // Displaying error message using toast
+    toast.error("Failed to update task. Please try again.");
+  } finally {
     setLoading(false);
-  };
+  }
+};
+
+
 
   if (!task || !projects || !users || !teams) {
     return <CustomCircularProgress />;
@@ -142,7 +171,7 @@ const UpdateTaskForm = ({ open, onClose, taskId }) => {
               type="text"
               id="title"
               name="title"
-              value={taskDetails.title}
+              value={taskDetails?.title}
               onChange={handleChange}
               placeholder="Enter a title for the issue"
               required
@@ -163,7 +192,7 @@ const UpdateTaskForm = ({ open, onClose, taskId }) => {
                 <select
                   id="project"
                   name="projectId"
-                  value={taskDetails.projectId}
+                  value={taskDetails?.projectId}
                   onChange={handleChange}
                   required
                   className="block appearance-none w-full bg-white border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
@@ -368,7 +397,7 @@ const UpdateTaskForm = ({ open, onClose, taskId }) => {
                   onChange={handleChange}
                   className="block appearance-none w-full bg-gray-100 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                 >
-                  <option value="">Select Status</option>
+                <option value="">Select Status</option>
                 <option value="ToDo">ToDo</option>
                 <option value="InProgress">InProgress</option>
                 <option value="Done">Done</option>
@@ -392,7 +421,7 @@ const UpdateTaskForm = ({ open, onClose, taskId }) => {
               <select
                 id="task"
                 name="parentId"
-                value={taskDetails.taskId}
+                value={taskDetails.parentId}
                 onChange={handleChange}
                 className="block appearance-none w-full bg-white border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
               >

@@ -60,7 +60,7 @@ async function validateAndFindProject(req, res, next) {
 router.post('/tenants/:tenantId/teams', validateAndFindTenant, async (req, res) => {
     try {
         const { name, description, tenantId } = req.body;
-        const newTeam = new Team({ name, description, tenantId });
+        const newTeam = new Team({ name, description, tenantId: req.params.tenantId  });
         await newTeam.save();
         res.status(201).json(newTeam);
     } catch (error) {
@@ -83,19 +83,42 @@ router.get('/tenants/:tenantId/teams/:teamId',validateAndFindTenant, validateAnd
     res.json(req.team);
 });
 
+
+// Example validateAndFindTenant middleware
+async function validateAndFindTenants(req, res, next) {
+    const { tenantId } = req.params;
+    console.log("Validating tenantId:", tenantId); // Log for debugging
+    try {
+        const tenant = await Tenant.findById(tenantId); // Adjust based on your model
+        if (!tenant) {
+            return res.status(404).json({ message: "Tenant not found" });
+        }
+        req.tenant = tenant; // Attach tenant to request for downstream use
+        next();
+    } catch (error) {
+        console.error("Error finding tenant:", error);
+        res.status(500).json({ message: "Failed to validate tenant", error: error.message });
+    }
+}
+
 // Update a team by ID
-router.put('/tenants/:tenantId/teams/:teamId',validateAndFindTenant, validateAndFindTeam, async (req, res) => {
+router.put('/tenants/:tenantId/teams/:teamId', validateAndFindTenant, validateAndFindTeam, async (req, res) => {
     try {
         const { name, description } = req.body;
         const updatedTeam = await Team.findByIdAndUpdate(req.params.teamId, { name, description }, { new: true });
+        if (!updatedTeam) {
+            return res.status(404).json({ message: "Team not found" });
+        }
         res.json(updatedTeam);
     } catch (error) {
+        console.error("Failed to update team:", error);
         res.status(500).json({ message: 'Failed to update team', error: error.message });
     }
 });
 
+
 // Delete a team by ID
-router.delete('/tenants/:tenantId/teams/:teamId',validateAndFindTenant, validateAndFindTeam, async (req, res) => {
+router.delete('/tenants/:tenantId/teams/:teamId', async (req, res) => {
     try {
         await Team.findByIdAndDelete(req.params.teamId);
         res.status(204).send();
@@ -106,21 +129,19 @@ router.delete('/tenants/:tenantId/teams/:teamId',validateAndFindTenant, validate
 
 // Associate a user with a team
 router.post('/tenants/:tenantId/teams/:teamId/users/:userId', validateAndFindTeam, validateAndFindUser, async (req, res) => {
-    // At this point, both req.team and req.user are available and validated
+    const { role } = req.body; // Make sure to send the role from your client-side application
     try {
         const { team, user } = req; // Destructure for easier access
         
-        // Proceed to add the user to the team, perhaps by creating a TeamUser association
-        const teamUser = new TeamUser({ teamId: team._id, userId: user._id });
+        const teamUser = new TeamUser({ teamId: team._id, userId: user._id, role });
         await teamUser.save();
 
-        // Respond with success
         res.status(201).json(teamUser);
     } catch (error) {
-        // Handle any errors that occur during the association
         res.status(500).json({ message: 'Failed to associate user with team', error: error.message });
     }
 });
+
 
 // Get all users for a specific team
 router.get('/tenants/:tenantId/teams/:teamId/users', validateAndFindTeam, async (req, res) => {

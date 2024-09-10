@@ -7,7 +7,7 @@ const SignupPage = () => {
     const [tenantId, setTenantId] = useState(null);
   
     return (
-      <Box className="flex justify-center items-center h-screen ">
+      <Box className=" items-center h-screen ">
         {!tenantId ? (
           <TenantSignup onTenantCreated={setTenantId} />
         ) : (

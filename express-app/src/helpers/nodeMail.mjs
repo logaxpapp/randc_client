@@ -8,7 +8,7 @@ const createTransporter = async () => {
     service: "gmail",
     auth: {
       user: process.env.EMAIL,
-      pass: process.env.APP_PASSWORD // Use Google App Password instead of OAuth2
+      pass: process.env.APP_PASSWORD 
     }
   });
 

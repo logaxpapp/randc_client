@@ -1,99 +1,160 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import listPlugin from '@fullcalendar/list';
-import '@fullcalendar/common/main.css'; 
-import './calendar.css';
+import { FaEdit } from 'react-icons/fa'; // Icon for editing
+import  { ReactComponent as GoogleCalendarIcon }  from '../assets/images/google.svg';
+import MockEventsIcon from '../assets/images/logo.png';
+import EventCreateForm from '../modal/EventCreateForm';
+import EventDetailsModal from '../modal/EventDetailsModal';
+import EventEditModal from '../modal/EventEditModal';
+import '../Integrations/integration.css'
 
-const Calendar = () => {
-  const [calendarView, setCalendarView] = useState('dayGridMonth');
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+const CalendarView = () => {
+    const [events, setEvents] = useState([]);
+    const [selectedEvent, setSelectedEvent] = useState(null);
+    const [isEventModalOpen, setIsEventModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [selectedDate, setSelectedDate] = useState(null);
+    const API_URL = process.env.REACT_APP_API_URL;
 
-  const updateDimensions = () => {
-    setWindowWidth(window.innerWidth);
-    if (window.innerWidth < 768) {
-      setCalendarView('listWeek'); // Change to a more mobile-friendly view on smaller screens
-    } else {
-      setCalendarView('dayGridMonth'); // Default view for larger screens
-    }
-  };
+    useEffect(() => {
+        fetchGoogleCalendarEvents();
+    }, []);
 
-  useEffect(() => {
-    window.addEventListener('resize', updateDimensions);
-    return () => window.removeEventListener('resize', updateDimensions);
+    const calendarRef = React.createRef();
+
+    useEffect(() => {
+      const adjustCalendarHeight = () => {
+          const calendarEl = document.querySelector('.fc-daygrid-body'); // Adjust selector as needed
+          if (calendarEl) {
+              let maxHeight = 0;
+              calendarEl.querySelectorAll('.fc-row').forEach(row => {
+                  const rowHeight = row.offsetHeight;
+                  if (rowHeight > maxHeight) maxHeight = rowHeight;
+              });
+              calendarEl.style.height = `${maxHeight}px`;
+          }
+      };
+  
+      window.addEventListener('resize', adjustCalendarHeight);
+      adjustCalendarHeight(); // Initial adjust
+  
+      return () => {
+          window.removeEventListener('resize', adjustCalendarHeight);
+      };
   }, []);
-  const events = [
-    { title: 'Loga Team Standup', date: '2024-04-25', color: '#7986cb' }, // Light Blue
-    { title: 'Product Demo', date: '2024-04-07', color: '#33b679' }, // Green
-    { title: 'Meeting with Client', date: '2024-04-01', color: '#f6c026' }, // Yellow
-    { title: 'Team Standup', date: '2024-04-20', color: '#8e24aa' }, // Purple
-    { title: 'Meeting with Client', date: '2024-04-23', color: '#f6c026' }, // Same Yellow
-    { title: 'Product Demo', date: '2024-04-22', color: '#33b679' }, // Green
-    { title: 'Team Standup', date: '2024-04-25', color: '#7986cb' }, // Light Blue
-    { title: 'Product Demo', date: '2024-04-27', color: '#33b679' }, // Green
-    { title: 'Meeting with Client', date: '2024-04-28', color: '#f6c026' }, // Yellow
-  ];
+  const fetchGoogleCalendarEvents = async () => {
+      try {
+          const { data } = await axios.get(`${API_URL}/calendars/list`, {
+              headers: { Authorization: `Bearer ${localStorage.getItem('jwtToken')}` }
+          });
+          console.log(data);
+          const formattedEvents = data.map(event => ({
+              id: event.id,
+              title: event.summary,
+              start: event.start.dateTime || event.start.date,
+              end: event.end.dateTime || event.end.date,
+              color: '#f8f9fb',  // Google Green
+              textColor: 'white',
+              location: event.location,
+              description: event.description,
+              htmlLink: event.htmlLink,
+              attendees: event.attendees,
+              hangoutLink: event.hangoutLink,
+           
+          }));
+          setEvents(formattedEvents);
+      } catch (error) {
+          console.error('Error fetching events:', error);
+      }
+  };
+   const handleEventClick = ({ event }) => {
+        setSelectedEvent(event);
+        setIsEventModalOpen(true);
+    };
 
-  // Handle click on calendar events
-  const handleEventClick = (clickInfo) => {
-    alert(`Event: ${clickInfo.event.title}`);
+    const handleEventEditClick = (event, jsEvent) => {
+    jsEvent.stopPropagation(); // Prevent the default event behavior
+    setSelectedEvent(event);
+    setIsEditModalOpen(true);
+    setIsEventModalOpen(false); // Optionally close the details modal if it's open
+};
+    const handleEventAdded = (newEvent) => {
+      const formattedEvent = {
+          ...newEvent,
+          start: newEvent.start.dateTime,
+          end: newEvent.end.dateTime,
+          color: '#7986cb'  // Set the color or other properties as needed
+      };
+      setEvents([...events, formattedEvent]);
+      setIsCreateModalOpen(false); // Close the create modal
   };
   
- 
+    const handleEventUpdated = (updatedEvent) => {
+        const updatedEvents = events.map(event => event.id === updatedEvent.id ? updatedEvent : event);
+        setEvents(updatedEvents);
+        setIsEventModalOpen(false);
+    };
+    const handleDateClick = (arg) => {
+      setSelectedDate(arg.dateStr);
+      setIsCreateModalOpen(true);
+  };
 
-  return (
-    <div className="p-4 bg-white mx-auto mt-5">
-       <FullCalendar
-        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
-        initialView={calendarView}
-        headerToolbar={{
-          left: 'prev,next today',
-          center: 'title',
-          right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth',
-        }}
-        events={events}
-        eventClick={handleEventClick}
-        moreLinkContent={({ num }) => `+${num} more`} // Customize more link text
-        nowIndicator // Display an indicator for the current time
-        expandRows // Make the row heights expand to fill the available height
-        navLinks // Can click day/week names to navigate views
-        selectable // Allow users to highlight multiple days or timeslots
-        selectMirror // Display a preview of the area being selected
-        dayMaxEvents // Limit the number of events displayed per day
-        eventContent={renderEventContent} // Custom render function for events
-        select={handleDateSelect} // Handle date selections
-        windowResize={updateDimensions} 
-      
-      />
-    </div>
-  );
+  const eventContent = (eventInfo) => {
+    // Helper function to truncate the title if it's too long
+    const truncateTitle = (title) => {
+        if (title.length > 20) {
+            return title.substring(0, 17) + '...';  // Truncate and add ellipsis
+        }
+        return title;
+    };
+
+    return (
+        <div className="flex items-center text-gray-600 p-1 rounded" style={{ fontSize: '0.75rem' }}>
+            <span className="flex-1 min-w-0">
+                <span className="font-bold mr-1">{eventInfo.timeText}</span>  {/* Time text */}
+                <GoogleCalendarIcon className=" mr-1 inline text-xxs  " />
+                <span  className="truncate" title={eventInfo.event.title}>{truncateTitle(eventInfo.event.title)}</span> {/* Event title */}
+            </span>
+            {eventInfo.event.hangoutLink && (
+                <a href={eventInfo.hangoutLink} target="_blank" rel="noopener noreferrer" className="hover:text-blue-500">
+                    Join
+                </a>
+            )}
+            <span
+                onClick={(jsEvent) => {
+                    jsEvent.stopPropagation(); // Prevent default event behavior
+                    handleEventEditClick(eventInfo.event, jsEvent);
+                }}
+                className="p-1 ml-2 hover:bg-yellow-200  cursor-pointer text-custom-blue rounded-full"
+                style={{ display: 'inline-flex', alignItems: 'center' }}
+            >
+                <FaEdit />
+            </span>
+        </div>
+    );
 };
 
-// Custom render for events
-const renderEventContent = (eventInfo) => (
-  <div>
-    <strong>{eventInfo.timeText}</strong>
-    <span className="ml-3 event-title">{eventInfo.event.title}</span>
+
+return (
+  <div className="p-4 bg-white mx-auto mt-5">
+     <FullCalendar
+                ref={calendarRef}
+                plugins={[dayGridPlugin, interactionPlugin]}
+                initialView="dayGridMonth"
+                events={events}
+                eventContent={eventContent}
+                dateClick={handleDateClick}
+                eventClick={({ event }) => setSelectedEvent(event) || setIsEventModalOpen(true)}
+            />
+      {isEventModalOpen && <EventDetailsModal event={selectedEvent} onClose={() => setIsEventModalOpen(false)} onUpdate={handleEventUpdated} />}
+      {isEditModalOpen && <EventEditModal event={selectedEvent} onClose={() => setIsEditModalOpen(false)} />}
+      {isCreateModalOpen && <EventCreateForm onEventAdded={handleEventAdded} date={selectedDate} onClose={() => setIsCreateModalOpen(false)} />}
   </div>
 );
-
-// Handle date selections
-const handleDateSelect = (selectInfo) => {
-  let title = prompt('Please enter a new title for your event');
-  const calendarApi = selectInfo.view.calendar;
-
-  calendarApi.unselect(); // Clear date selection
-
-  if (title) {
-    calendarApi.addEvent({
-      title,
-      start: selectInfo.startStr,
-      end: selectInfo.endStr,
-      allDay: selectInfo.allDay
-    });
-  }
 };
 
-export default Calendar;
+export default CalendarView;

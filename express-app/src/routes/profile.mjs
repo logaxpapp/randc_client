@@ -3,11 +3,11 @@ import Profile from '../mongoose/schemas/profile.mjs';
 import { sanitizeInput } from '../component/utils/profileMiddleware.mjs'; 
 import { validateAndFindTenant } from '../component/utils/middleware.mjs';
 import multer from 'multer';
-import cloudinaryV2 from '../configuration/cloudinaryConfig.mjs';
+import { upload } from '../configuration/cloudinaryConfig.mjs';
 import User from '../mongoose/schemas/user.mjs';
 
 const router = express.Router();
-const upload = multer({ dest: 'temp/' }); // Temporary storage
+
 
 router.post('/tenants/:tenantId/profiles/:userId', [validateAndFindTenant, upload.single('image'), sanitizeInput], async (req, res) => {
     try {

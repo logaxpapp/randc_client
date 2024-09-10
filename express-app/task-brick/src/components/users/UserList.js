@@ -3,7 +3,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchUsers, deleteUser } from '../../features/user/userSlice';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
-import { useNavigate } from 'react-router-dom';
+import { toast } from'react-toastify';
+import UpdateUserForm from './UpdateUserForm'; // Import the UpdateUserForm component
 
 const UserList = () => {
   const dispatch = useDispatch();
@@ -14,7 +15,9 @@ const UserList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedUsers, setSelectedUsers] = useState([]); // State to store selected users
   const itemsPerPage = 15;
-  const navigate = useNavigate();
+  const [isOpenModal, setIsOpenModal] = useState(false);
+  const [selectedUserDetails, setSelectedUserDetails] = useState(null);
+
 
   useEffect(() => {
     if (tenantId) {
@@ -32,13 +35,40 @@ const UserList = () => {
 
   const handleDelete = (userId) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
-      dispatch(deleteUser({ userId, tenantId }));
+      dispatch(deleteUser(userId))
+        .unwrap()
+        .then(() => {
+          // Success Feedback
+          toast.success('User deleted successfully.');
+  
+          // Option 1: Refetch users list (if the users state doesn't auto-update)
+          // dispatch(fetchUsers(tenantId));
+  
+          // Option 2: Manually remove the user from the local state to update UI
+          // This is more efficient than refetching the entire list
+          setFilteredUsers(filteredUsers.filter(user => user._id !== userId));
+  
+        })
+        .catch((error) => {
+          // Error Feedback
+          console.error('Failed to delete user', error);
+          toast.error(`Failed to delete user: ${error.message || 'Unknown error'}`);
+        });
     }
   };
+  
 
-  const handleEdit = (_id) => {
-    navigate(`/dashboard/update-user/${_id}`);
+  const handleEdit = (userId) => {
+    // Find the user object by its ID
+    const userToEdit = users.find((user) => user._id === userId);
+    if (userToEdit) {
+      setSelectedUserDetails(userToEdit);
+      setIsOpenModal(true);
+    } else {
+      console.error('User not found!');
+    }
   };
+  
 
   const handleCheckboxChange = (userId) => {
     // Toggle the selection of the user
@@ -86,11 +116,11 @@ const UserList = () => {
         onChange={(e) => setSearchTerm(e.target.value)}
         className="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-500"
       />
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto text-black text-sm">
         <table className="w-full mt-4 text-left">
           <thead>
             <tr className="bg-gray-200 text-left">
-              <th className="py-2 px-4 hidden md:table-cell">Select</th> {/* Checkbox column hidden on mobile */}
+              <th className="py-1 px-8 hidden md:table-cell text-center">Select</th> {/* Checkbox column hidden on mobile */}
               <th className="py-2 px-4">Name</th>
               <th className="py-2 px-4">Email</th>
               <th className="py-2 px-4 hidden md:table-cell">Role</th> {/* Role column hidden on mobile */}
@@ -99,34 +129,41 @@ const UserList = () => {
           </thead>
           <tbody>
           {currentItems.map(user => (
-  <tr key={user.id}>
-    <td className="py-2 px-4 hidden md:table-cell"> {/* Checkbox hidden on mobile */}
-      <input
-        type="checkbox"
-        checked={selectedUsers.includes(user._id)}
-        onChange={() => handleCheckboxChange(user._id)}
-      />
-    </td>
-    <td className="py-2 px-4">{user.firstName} {user.lastName}</td>
-    <td className="py-2 px-4 text-left">{user.email}</td>
-    <td className="py-2 px-4 hidden md:table-cell">{user.role}</td> {/* Role column hidden on mobile */}
-    <td className="py-2 px-4">
-      <button onClick={() => handleEdit(user._id)} className="mr-2">
-        <FontAwesomeIcon icon={faEdit} className="text-blue-500 hover:text-blue-700" />
-      </button>
-      <button onClick={() => handleDelete(user._id)}>
-        <FontAwesomeIcon icon={faTrashAlt} className="text-red-500 hover:text-red-700" />
-      </button>
-    </td>
-  </tr>
-))}
+        <tr key={user.id}>
+          <td className="py-2 px-4 hidden md:table-cell rounded-full text-center"> {/* Checkbox hidden on mobile */}
+            <input
+              type="checkbox"
+              checked={selectedUsers.includes(user._id)}
+              onChange={() => handleCheckboxChange(user._id)}
+              className='form-checkbox h-4 w-4 text-blue-600 border-blue-500 rounded-full focus:ring-blue-500'
+            />
+          </td>
+          <td className="py-2 px-4">{user.firstName} {user.lastName}</td>
+          <td className="py-2 px-4 text-left">{user.email}</td>
+          <td className="py-2 px-4 hidden md:table-cell">{user.role}</td> {/* Role column hidden on mobile */}
+          <td className="py-2 px-4">
+            <button onClick={() => handleEdit(user._id)} className="mr-2">
+              <FontAwesomeIcon icon={faEdit} className="text-blue-500 hover:text-blue-700" />
+            </button>
+            <button onClick={() => handleDelete(user._id)}>
+              <FontAwesomeIcon icon={faTrashAlt} className="text-red-500 hover:text-red-700" />
+            </button>
+          </td>
 
-          </tbody>
-        </table>
+        </tr>
+      ))}
+    </tbody>
+    </table>
       </div>
       <div className="flex justify-center mt-4">
         {renderPagination()}
       </div>
+
+      <UpdateUserForm
+        isOpen={isOpenModal}
+        onClose={() => setIsOpenModal(false)}
+        userDetails={selectedUserDetails}
+      />
     </div>
   );
   

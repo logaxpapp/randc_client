@@ -4,7 +4,7 @@ export const themes = [
         name: 'Default',
         textColor: '#22223b', // Dark gray for better readability
         textSize: '16px', // A more standard size for readability
-        bgColor: '#FFFFFF', // White background for a clean look
+        bgColor: '#ffffff', // White background for a clean look
         primaryColor: '#032b43', // A lighter blue for primary actions
         secondaryColor: '#F2F2F2', // Light gray for secondary elements and backgrounds
         iconColor: '#5B9BD5', // Icons use the primary color
@@ -26,7 +26,7 @@ export const themes = [
         name: 'Blue',
         textColor: '#051923',
         textSize: '14px',
-        bgColor: '#a9d6e5', // A darker shade of blue for the background
+        bgColor: '#c6dbf0', // A darker shade of blue for the background
         primaryColor: '#1E88E5', // A slightly lighter blue for primary actions
         secondaryColor: '#4FC3F7', // Even lighter blue for secondary elements
         iconColor: '#FFFFFF', // White icons for better contrast on blue
@@ -41,9 +41,9 @@ export const themes = [
       
       {
         name: 'Green',
-        textColor: '#ffffff', // Dark teal for text, which is more subdued than pure black
+        textColor: '#285943', // Dark teal for text, which is more subdued than pure black
         textSize: '14px',
-        bgColor: '#dde5b6', // Soft green for the background
+        bgColor: '#d0ddd7', // Soft green for the background
         primaryColor: '#388E3C', // A strong green for calls to action
         linkColor: '#032b43', // A strong green for links, which is more prominent than the primary color
         linkHoverColor: '#2E7D32', // A lighter green for links when hovered over, which is more prominent than the primary color
@@ -69,7 +69,7 @@ export const themes = [
     // Add other themes similarly...
     {
         name: 'Accessibility',
-        textColor: '#000000', // High contrast black text
+        textColor: '#212121', // High contrast black text
         textSize: '18px', // Larger text size for better visibility
         bgColor: '#f5ebe0', // High contrast white background
         primaryColor: '#FFD700', // Gold color for important action items, which has good visibility
@@ -86,7 +86,7 @@ export const themes = [
         name: 'Dark',
         textColor: '#FFFFFF', // White text for readability
         textSize: '16px', // Standard text size for readability
-        bgColor: '#333533', // Black background for a dark theme
+        bgColor: '#22333b', // Black background for a dark theme
         primaryColor: '#00FF00', // Green for primary actions
         secondaryColor: '#808080', // Gray for secondary elements
         iconColor: '#FFFFFF', // White icons for better contrast
@@ -95,6 +95,7 @@ export const themes = [
         description: 'A dark theme for a more formal setting',
         icon: 'brightness_2',
         isAccessibilityFocused: false,
+        opacity: 0.65,
       }
       
   ];

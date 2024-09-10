@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Menu } from '@headlessui/react'; // Tailwind CSS menu component
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import LogoutModal from '../modal/LogoutModal';
+import { useSelector } from'react-redux';
 import SignUpModal from '../modal/SignUpModal';
 import Logo from '../../assets/images/logo.png';
 import { useAuth } from '../../context/AuthContext';
@@ -9,6 +9,7 @@ import { useAuth } from '../../context/AuthContext';
 const Header = () => {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
+  const { isAuthenticated } = useSelector((state) => state.auth);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -26,7 +27,7 @@ const Header = () => {
   const navigationLinks = [
     { name: 'Home', path: '/' },
     { name: 'Solutions', path: '/solution' },
-    { name: 'Services', path: '/services' },
+    { name: 'About Us', path: '/about_us' },
   ];
 
   return (
@@ -37,7 +38,7 @@ const Header = () => {
       <RouterLink to="/" className="flex items-center"> {/* Nested flex container for logo and text */}
         <img src={Logo} alt="TaskBrick Logo" className="h-10 mr-2" /> {/* Add margin to the right */}
         <span className="text-2xl font-bold text-gray-900">
-          Task <span className='text-green-500'>Brick</span>
+          Task<span className='text-green-500'>Brick</span>
         </span>
       </RouterLink>
     </div>
@@ -48,10 +49,8 @@ const Header = () => {
         </RouterLink>
       ))}
     </div>
-
-
           <div className="flex items-center text-blue-700  space-x-4 text-xl font-medium">
-            {user ? (
+            {isAuthenticated ? (
               <>
                 <button className="text-blue-600  text-xl hover:text-blue-500" onClick={handleOpenLogoutModal}>Logout</button>
                 <LogoutModal open={isLogoutModalOpen} handleClose={handleCloseLogoutModal} onLogout={performLogout} />

@@ -6,7 +6,8 @@ import axios from 'axios';
 // Async thunk for fetching users
 export const fetchUsers = createAsyncThunk(
   'users/fetchUsers',
-  async (tenantId, { rejectWithValue }) => {
+  async (_, { getState, rejectWithValue }) => {
+    const { tenantId } = getState().auth.user; // Assuming tenantId is stored in auth state
     try {
       const response = await axios.get(`/api/tenants/${tenantId}/users`);
      
@@ -72,16 +73,17 @@ export const updateUser = createAsyncThunk(
 // Async thunk for deleting a user
 export const deleteUser = createAsyncThunk(
   'users/deleteUser',
-  async (userId, tenantId, { rejectWithValue }) => {
+  async (userId, { getState, rejectWithValue }) => {
+    const tenantId = getState().auth.user.tenantId;
     try {
       await axios.delete(`/api/tenants/${tenantId}/users/${userId}`);
-
-      return userId; // Return the id of the deleted user to remove it from the state
+      return userId;
     } catch (error) {
       return rejectWithValue(error.response.data);
     }
   }
 );
+
 
 const userSlice = createSlice({
     name: 'users',
@@ -103,8 +105,10 @@ const userSlice = createSlice({
         })
         .addCase(fetchUsers.rejected, (state, action) => {
           state.status = 'failed';
-          state.error = action.payload.message;
+          // Make sure you handle the possibility of action.payload being undefined or not having a .message
+          state.error = action.payload?.message || 'Failed to fetch users';
         })
+        
         .addCase(createUser.fulfilled, (state, action) => {
           state.list.push(action.payload);
         })

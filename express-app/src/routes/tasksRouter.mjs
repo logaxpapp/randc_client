@@ -1,6 +1,7 @@
 import express from 'express';
 import Task from '../mongoose/schemas/task.mjs';
 import { body, param, validationResult } from 'express-validator';
+import mongoose from 'mongoose';
 import { validateAndFindTenant, validateAndFindTask, validateAndFindUser, validateAndFindTeam, validateAndFindProject } from '../component/utils/middleware.mjs';
 import {uploadAndValidateImage } from '../component/utils/profileMiddleware.mjs';
 
@@ -23,9 +24,29 @@ const taskValidations = [
   body('priority').isIn(['High', 'Medium', 'Low', 'None', 'Critical', 'Blocker', 'Major', 'Minor', 'Trivial', 'Urgent']).withMessage('Invalid priority specified'),
   body('status').isIn(['ToDo', 'InProgress', 'Done', 'Reviewed', 'Cancelled', 'OnHold', 'Resolved', 'Closed', 'Reopened']).withMessage('Invalid status specified'),
   body('projectId').isMongoId().withMessage('Invalid Project ID'),
-  body('assigneeId').optional().isMongoId().withMessage('Invalid Assignee ID'),
   body('reporterId').optional().isMongoId().withMessage('Invalid Reporter ID'),
-  body('teamId').optional().isMongoId().withMessage('Invalid Team ID'),
+  body('assigneeId').custom((value, { req }) => {
+    if (value === undefined || value === '') {
+      // Field is optional; pass validation if it's not provided or empty
+      return true;
+    }
+    // If provided, check if it's a valid MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(value)) {
+      throw new Error('Invalid Assignee ID');
+    }
+    return true;
+  }),
+  body('teamId').custom((value, { req }) => {
+    if (value === undefined || value === '') {
+      // Field is optional; pass validation if it's not provided or empty
+      return true;
+    }
+    // If provided, check if it's a valid MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(value)) {
+      throw new Error('Invalid Team ID');
+    }
+    return true;
+  }),
   handleValidationErrors
 ];
 
@@ -53,16 +74,36 @@ const patchTaskValidations = [
 ];
 
 
+// Assuming all required imports and middleware are defined elsewhere
+
 // Create a new task
 router.post('/tenants/:tenantId/tasks', validateAndFindTenant, validateAndFindProject, validateAndFindUser, taskValidations, async (req, res) => {
+  let taskData = { ...req.body, tenantId: req.params.tenantId };
+
+  // Remove or nullify parentId if it's an empty string
+  if (taskData.parentId === '') {
+    taskData.parentId = null; // Or delete taskData.parentId;
+  }
+  
+  // Optional fields should not be included if they are empty or not provided
+  if (!taskData.assigneeId) {
+    delete taskData.assigneeId;
+  }
+  if (!taskData.teamId) {
+    delete taskData.teamId;
+  }
+
   try {
-    const newTask = new Task({ ...req.body, tenantId: req.params.tenantId });
+    const newTask = new Task(taskData);
     await newTask.save();
     res.status(201).json(newTask);
   } catch (error) {
+    console.error('Error creating a new task:', error);
     res.status(500).json({ message: 'Failed to create task', error: error.message });
   }
 });
+
+
 
 // Get all tasks for a tenant
 router.get('/tenants/:tenantId/tasks', validateAndFindTenant, async (req, res) => {
@@ -71,7 +112,9 @@ router.get('/tenants/:tenantId/tasks', validateAndFindTenant, async (req, res) =
       .populate('projectId')
       .populate('assigneeId')
       .populate('reporterId')
-      .populate('teamId'); // Ensure schema supports this
+      .populate('teamId')
+      .populate('tenantId')
+      .populate('parentId', 'title')
     res.json(tasks);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch tasks', error: error.message });
@@ -200,23 +243,5 @@ router.post('/tenants/:tenantId/tasks/:taskId/logTime', [validateAndFindTenant, 
   res.json(updatedTask);
 });
 
-// router.post('/tenants/:tenantId/tasks/:taskId/uploadFile', uploadAndValidateImage.single('file'), async (req, res) => {
-//   const { taskId } = req.params;
-  
-//   try {
-//     // Assuming req.file contains the file uploaded
-//     // and Cloudinary's response is stored in req.file.path
-//     const fileUrl = req.file.path;
-
-//     // Add file URL to the task's fileAttachments array
-//     const updatedTask = await Task.findByIdAndUpdate(taskId, {
-//       $push: { fileAttachments: fileUrl }
-//     }, { new: true });
-
-//     res.status(200).json(updatedTask);
-//   } catch (error) {
-//     res.status(500).json({ message: 'Failed to upload file', error: error.message });
-//   }
-// });
 
 export default router;

@@ -19,6 +19,8 @@ import registrationRouter from "./registration.mjs";
 import teamRouter from "./team.mjs";
 import ProjectTeamRouter from "./projectTeam.mjs";
 import taskTeamRouter from "./taskTeam.mjs";
+import TeamUser from "./teamUser.mjs";
+import taskLinksRouter from "./taskLinks.mjs";
 
 
 
@@ -27,14 +29,14 @@ const router = Router();
 
 router.use(userRouter);
 router.use(tenantRouter);
-router.use(tenantUser);
+router.use('/api',tenantUser);
 router.use('/api', projectRouter);
 router.use('/api', taskRouter);
 router.use("/api", commentsRouter);
 router.use("/api/tenants/:tenantId", validateTenantExists, sprintRouter);
 router.use("/api/projectUser", projectUserRouter);
-router.use("/api/sprintTask", sprintTaskRouter);
-router.use("/api/eventLog", eventLogRouter);
+router.use("/api/tenants/:tenantId", sprintTaskRouter);
+router.use("/api/", eventLogRouter);
 router.use("/api/board", boardRouter);
 router.use("/api/boardTasks", boardTasksRouter);
 router.use("/api", authGoogle);
@@ -44,7 +46,8 @@ router.use("/api", authRouter);
 router.use("/api", teamRouter);
 router.use("/api", ProjectTeamRouter);
 router.use("/api", taskTeamRouter);
-
+router.use("/api", TeamUser);
+router.use('/api/tenants/:tenantId', validateTenantExists, taskLinksRouter);
 
 
 export default router;

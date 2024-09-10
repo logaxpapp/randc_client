@@ -6,6 +6,7 @@ import TeamMember3 from '../../component/assets/images/team3.png';
 import TeamMember4 from '../../component/assets/images/team4.png';
 import TeamMember5 from '../../component/assets/images/team5.png';
 import TeamMember6 from '../../component/assets/images/team6.png';
+import PartyImage from '../assets/images/party.png';
 
 // Sample data for team members
 const teamMembers = [
@@ -21,9 +22,10 @@ const teamMembers = [
 
 const OurTeam = () => {
   return (
-    <div className=" text-center p-6 max-w-4xl mx-auto">
-      <h2 className="text-3xl font-bold text-gray-800 text-left  mb-8">Our Team</h2>
-      <p className="text-gray-600 mb-6 text-left max-w-2xl">We're a dynamic group of individuals who are passionate about what we do and dedicated to delivering the best results for our clients.</p>
+    <div className="flex items-center justify-center min-h-screen bg-no-repeat bg-cover" style={{ backgroundImage: `url(${PartyImage})` }}>
+    <div className=" text-center p-6 bg-yellow-50 rounded-lg mx-auto">
+      <h2 className="text-3xl font-bold font-serif text-gray-800 text-left  mb-8">Our Team</h2>
+      <p className="text-gray-600 mb-6 text-left max-w-2xl font-serif">We're a dynamic group of individuals who are passionate about what we do and dedicated to delivering the best results for our clients.</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {teamMembers.map(member => (
           <div key={member.id} className="p-4">
@@ -45,6 +47,7 @@ const OurTeam = () => {
         ))}
       </div>
     </div>
+  </div>
   );
 };
 

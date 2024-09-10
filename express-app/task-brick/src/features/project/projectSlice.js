@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
+
 // Async thunk for fetching project details
 export const fetchProjectDetails = createAsyncThunk(
   'project/fetchDetails',
@@ -70,10 +71,15 @@ const projectSlice = createSlice({
   initialState: {
     projects: [],
     project: null,
+    currentProjectId: null, 
     status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
     error: null,
   },
-  reducers: {},
+  reducers: {
+    setCurrentProjectId(state, action) {
+      state.currentProjectId = action.payload;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchProjectDetails.pending, (state) => {
@@ -117,5 +123,7 @@ const projectSlice = createSlice({
       });
   },
 });
+export const { setCurrentProjectId } = projectSlice.actions;
+
 
 export default projectSlice.reducer;

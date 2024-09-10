@@ -7,20 +7,21 @@ import { toast } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faPlus, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 
-const ManageProjectModal = ({ open, handleClose }) => {
+const ManageProjectModal = ({ open, handleClose, projectDetails }) => {
   const dispatch = useDispatch();
   
   const { projectId } = useParams();
   const navigate = useNavigate();
-  const projectDetails = useSelector((state) => state.project.projects);
   const loading = useSelector((state) => state.project.status === 'loading');
   const { user } = useSelector((state) => state.auth);
   const tenantId = user ? user.tenantId : null;
+   
+  const stat = projectDetails?.status || 'Active';
 
   const [project, setProject] = useState({
     name: '',
     description: '',
-    status: 'Active',
+    status: stat,
     objectives: '',
     deadline: '',
     managerEmail: '',
@@ -40,21 +41,14 @@ const ManageProjectModal = ({ open, handleClose }) => {
         content: update.content || '',
         date: update.date ? new Date(update.date).toISOString().split('T')[0] : '' // Convert to "YYYY-MM-DD"
       }));
-  
+    
       setProject({
-        name: projectDetails.name || '',
-        description: projectDetails.description || '',
-        status: projectDetails.status || 'Active',
-        objectives: projectDetails.objectives || '',
-        deadline: projectDetails.deadline ? projectDetails.deadline.split('T')[0] : '',
-        managerEmail: projectDetails.manager?.email || '',
+        ...projectDetails,
         updates: formattedUpdates,
-       
       });
     }
   }, [projectDetails]);
   
-
 
  // Handle adding an update field
  const addUpdateField = () => {
@@ -64,14 +58,14 @@ const ManageProjectModal = ({ open, handleClose }) => {
   }));
 };
 
-// Handle removing an update field
 const removeUpdateField = (index) => {
   setProject(prevProject => ({
     ...prevProject,
     updates: prevProject.updates.filter((_, i) => i !== index),
   }));
 };
-const [updates, setUpdates] = useState(project?.updates || []);
+
+
 // Handle changing updates
 const handleUpdateChange = (index, field, value) => {
   const newUpdates = project.updates?.map((update, i) => {
@@ -90,21 +84,26 @@ const handleUpdateChange = (index, field, value) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Check for tenantId and projectId presence
     if (!tenantId || !projectId) {
       toast.error('Missing tenant ID or project ID.');
       return;
     }
+    // Dispatch the update project action
     dispatch(updateProject({ tenantId, projectId, projectData: project }))
       .unwrap()
       .then(() => {
+        // If the update is successful, show a success message
         toast.success('Project updated successfully');
-        handleClose();
-        navigate('/dashboard/all-projects');
+        handleClose(); // Close the modal
+        navigate('/dashboard/all-projects'); // Navigate to the all-projects page
       })
       .catch((error) => {
+        // If the update fails, show an error message
         toast.error(`Error updating project: ${error.message}`);
       });
   };
+  
 
   const handleOverlayClick = (e) => {
     if (e.target.classList.contains('modal-overlay')) {
@@ -202,51 +201,52 @@ const handleUpdateChange = (index, field, value) => {
       />
     </div>
     <div className='col-span-2'>
-      <h4 className="text-sm mb-2">Project Updates</h4>
-      {updates.length > 0 ? updates.map((update, index) => (
-        <div key={index} className="flex items-center space-x-3 my-2">
-          {/* Update Content Field */}
-          <div className="flex-grow">
-            <label htmlFor={`update-content-${index}`} className="block text-sm font-medium text-gray-700">Update Content</label>
-            <input
-              type="text"
-              id={`update-content-${index}`}
-              value={update.content || ''}
-              onChange={(e) => handleUpdateChange(index, 'content', e.target.value)}
-              className="mt-1 p-2 block w-full border border-gray-300 rounded-md"
-            />
-          </div>
-          {/* Update Date Field */}
-          <div>
-            <label htmlFor={`update-date-${index}`} className="block text-sm font-medium text-gray-700">Update Date</label>
-            <input
-              type="date"
-              id={`update-date-${index}`}
-              value={update.date || ''}
-              onChange={(e) => handleUpdateChange(index, 'date', e.target.value)}
-              className="mt-1 p-2 block w-full border border-gray-300 rounded-md"
-            />
-          </div>
-          {/* Remove Update Button */}
-          <button
-            type="button"
-            onClick={() => removeUpdateField(index)}
-            className="p-2 bg-red-500 text-white rounded-md hover:bg-red-700"
-          >
-            <FontAwesomeIcon icon={faTrashAlt} />
-          </button>
-        </div>
-      )) : <p>No updates available</p>}
-
-      {/* Add Update Button */}
+  <h4 className="text-sm mb-2">Project Updates</h4>
+  {project.updates?.length > 0 ? project.updates.map((update, index) => (
+    <div key={index} className="flex items-center space-x-3 my-2">
+      {/* Update Content Field */}
+      <div className="flex-grow">
+        <label htmlFor={`update-content-${index}`} className="block text-sm font-medium text-gray-700">Update Content</label>
+        <input
+          type="text"
+          id={`update-content-${index}`}
+          value={update.content || ''}
+          onChange={(e) => handleUpdateChange(index, 'content', e.target.value)}
+          className="mt-1 p-2 block w-full border border-gray-300 rounded-md"
+        />
+      </div>
+      {/* Update Date Field */}
+      <div>
+        <label htmlFor={`update-date-${index}`} className="block text-sm font-medium text-gray-700">Update Date</label>
+        <input
+          type="date"
+          id={`update-date-${index}`}
+          value={update.date || ''}
+          onChange={(e) => handleUpdateChange(index, 'date', e.target.value)}
+          className="mt-1 p-2 block w-full border border-gray-300 rounded-md"
+        />
+      </div>
+      {/* Remove Update Button */}
       <button
         type="button"
-        onClick={addUpdateField}
-        className="mt-4 p-2 bg-blue-500 text-white rounded-md hover:bg-blue-700 flex items-center"
+        onClick={() => removeUpdateField(index)}
+        className="p-2 bg-red-500 text-white rounded-md hover:bg-red-700"
       >
-        <FontAwesomeIcon icon={faPlus} className="mr-2" /> Add Update
+        <FontAwesomeIcon icon={faTrashAlt} />
       </button>
     </div>
+  )) : <p>No updates available</p>}
+
+  {/* Add Update Button */}
+  <button
+    type="button"
+    onClick={addUpdateField}
+    className="mt-4 p-2 bg-blue-500 text-white rounded-md hover:bg-blue-700 flex items-center"
+  >
+    <FontAwesomeIcon icon={faPlus} className="mr-2" /> Add Update
+  </button>
+</div>
+
   
   </div>
 

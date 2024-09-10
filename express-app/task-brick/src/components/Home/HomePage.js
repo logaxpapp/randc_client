@@ -8,12 +8,14 @@ import InsightComponent from './InsightComponent'
 import Subscription from './Subscription'
 import CategoryCarousel from './CategoryCarousel';
 import Recommended from './Recommended'
+import EventList from './EventList';
 
 function HomePage() {
   return (
     <div >
       <HeroPage />
       <Recommended />
+      <EventList />
       <Trust />
       <FeatureList />
       <TemplatesComponent />

@@ -35,26 +35,32 @@ const IssueBoard = () => {
 
   return (
     <FilterContext.Provider value={{ filters, setFilters }}>
-    <div className="flex flex-col bg-gray-50">
-      <Header
-        onSearch={handleSearch}
-        onFilterChange={handleFilterChange}
-        onExport={handleExport}
-        onViewChange={handleViewChange}
-      />
-      <main className="flex-1 flex ">
-        <div className="w-2/6 overflow-y-auto min-h-screen">
-          <IssueList />
-        </div>
-        <div className="w-3/6 ">
-          <IssueDetails />
-        </div>
-        <div className="w-2/6">
-          <IssueAttributes />
-        </div>
-      </main>
-    </div>
-    </FilterContext.Provider>
+  <div className="flex flex-col bg-gray-50">
+    <Header
+      onSearch={handleSearch}
+      onFilterChange={handleFilterChange}
+      onExport={handleExport}
+      onViewChange={handleViewChange}
+    />
+    <main className="flex-1 flex flex-col md:flex-row">
+      {/* Issue List - Keep this small */}
+      <div className="w-full md:w-1/4 lg:w-1/5 overflow-y-auto min-h-screen">
+        <IssueList />
+      </div>
+
+      {/* Issue Details - This should take up the majority of the space */}
+      <div className="flex-1 overflow-y-auto min-h-screen">
+        <IssueDetails />
+      </div>
+
+      {/* Issue Attributes - Give it more space than the list but less than details */}
+      <div className="w-full md:w-1/4 lg:w-1/3 overflow-y-auto min-h-screen">
+        <IssueAttributes />
+      </div>
+    </main>
+  </div>
+</FilterContext.Provider>
+
   );
 };
 

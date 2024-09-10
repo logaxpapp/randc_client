@@ -4,7 +4,10 @@ import Task from "../../mongoose/schemas/task.mjs";
 import Project from "../../mongoose/schemas/project.mjs";
 import Comment from "../../mongoose/schemas/comment.mjs";
 import Team from "../../mongoose/schemas/team.mjs";
+import Sprint from "../../mongoose/schemas/sprint.mjs";
 import pkg from 'express-validator';
+import jwt from 'jsonwebtoken';
+
 import mongoose from "mongoose";
 
 
@@ -338,21 +341,24 @@ export const authenticate = async (req, res, next) => {
     if (!token) {
       return res.status(401).json({ message: 'Token is missing' });
     }
-  
+    console.log("Received token:", token);
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const user = await User.findById(decoded.id).select('-passwordHash');
-  
-      if (!user) {
-        return res.status(401).json({ message: 'Invalid token' });
-      }
-  
-      req.user = user; // Attach user to request object
-      next();
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log("Verified and decoded token:", decoded);
+        const user = await User.findById(decoded.id).select('-passwordHash');
+    
+        if (!user) {
+          return res.status(401).json({ message: 'Invalid token' });
+        }
+    
+        req.user = user; // Attach user to request object
+        next();
     } catch (error) {
-      res.status(401).json({ message: 'Invalid or expired token' });
+        console.error("Token verification error:", error);
+        res.status(401).json({ message: 'Invalid or expired token' });
     }
-  };
+    };
+    
 
  // authorize middleware
 export const authorize = (roles = []) => {
@@ -384,20 +390,39 @@ export const authorize = (roles = []) => {
     next();
   };
 
-export const validateSprintExists = async (req, res, next) => {
-  const { id } = req.params;
-  try {
-    const sprint = await Sprint.findById(id);
-    if (!sprint) {
-      return res.status(404).json({ message: "Sprint not found" });
+  export const validateSprintExists = async (req, res, next) => {
+    const { sprintId } = req.params; 
+    try {
+      const sprint = await Sprint.findById(sprintId);
+      if (!sprint) {
+        return res.status(404).json({ message: "Sprint not found" });
+      }
+      req.sprint = sprint; // Attach the sprint to the request object
+      next();
+    } catch (error) {
+      res.status(500).json({ message: "Server error", error: error.message });
     }
-    req.sprint = sprint; // Attach the sprint to the request object
-    next();
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
+  };
+  
 
+export const findProject = async (req, res, next) => {
+    try {
+      const project = await Project.findById(req.params.projectId);
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+      // Ensure the project belongs to the tenant
+      // Convert both IDs to strings for comparison
+      if (project.tenantId.toString() !== req.tenant._id.toString()) {
+        return res.status(403).json({ message: "Access forbidden" });
+      }
+      req.project = project;
+      next();
+    } catch (error) {
+      res.status(500).json({ message: "Server error", error: error.message });
+    }
+  };
+  
 
 export const validateProjectExists = async (req, res, next) => {
     const { id } = req.params;
@@ -412,3 +437,124 @@ export const validateProjectExists = async (req, res, next) => {
       res.status(500).json({ message: "Server error", error: error.message });
     }
   };
+/**
+ * Middleware to ensure that certain operations on a sprint are allowed based on its status.
+ * @param {Array} allowedStatuses - An array of statuses that are permitted to perform the operation.
+ */
+ export const ensureValidSprintStatusForOperation = (allowedStatuses) => {
+    return async (req, res, next) => {
+      const sprintId = req.params.sprintId;
+      try {
+        const sprint = await Sprint.findById(sprintId);
+        if (!sprint) {
+          return res.status(404).json({ message: 'Sprint not found' });
+        }
+        // Check if the sprint's status is in the list of allowed statuses
+        if (!allowedStatuses.includes(sprint.status)) {
+          return res.status(403).json({
+            message: `Operation not allowed on sprint with status ${sprint.status}.`,
+            allowedStatuses: allowedStatuses,
+          });
+        }
+        next();
+      } catch (error) {
+        res.status(500).json({ message: 'Failed to validate sprint status for operation', error: error.message });
+      }
+    };
+  };
+
+  /**
+ * Middleware to validate that the proposed start and end dates for a sprint do not overlap
+ * with existing sprints within the same project.
+ *
+ * @param {mongoose.Model} SprintModel - The Mongoose model for sprints, used to query existing sprints.
+ * @returns {Function} An Express middleware function that checks for date overlaps and either
+ *                     proceeds with the next middleware in the stack or returns an error response.
+ */
+export const validateDateOverlap = (SprintModel) => async (req, res, next) => {
+    const { startDate, endDate, projectId } = req.body;
+  
+    // Convert string dates to Date objects for comparison
+    const proposedStartDate = new Date(startDate);
+    const proposedEndDate = new Date(endDate);
+  
+    if (!proposedStartDate || !proposedEndDate || isNaN(proposedStartDate.getTime()) || isNaN(proposedEndDate.getTime())) {
+      return res.status(400).json({ message: "Invalid start or end date." });
+    }
+  
+    try {
+      // Check for existing sprints with overlapping dates within the same project
+      const overlappingSprints = await SprintModel.find({
+        projectId: projectId,
+        $or: [
+          { startDate: { $lte: proposedEndDate }, endDate: { $gte: proposedStartDate } }, // Existing sprints that overlap with the proposed dates
+        ]
+      });
+  
+      // Exclude the current sprint from the check if updating
+      const isUpdating = req.method === 'PUT' || req.method === 'PATCH';
+      const filteredSprints = isUpdating
+        ? overlappingSprints.filter(sprint => sprint.id !== req.params.sprintId)
+        : overlappingSprints;
+  
+      if (filteredSprints.length > 0) {
+        // Found overlapping sprints
+        return res.status(409).json({
+          message: "The proposed dates overlap with an existing sprint in this project.",
+          overlappingSprints: filteredSprints.map(sprint => ({ id: sprint.id, name: sprint.name, startDate: sprint.startDate, endDate: sprint.endDate }))
+        });
+      }
+  
+      next();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to validate date overlap.", error: error.message });
+    }
+  };
+
+  export const requireRole = (requiredRoles) => async (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+  
+    const hasRequiredRole = requiredRoles.includes(req.user.role);
+    if (!hasRequiredRole) {
+      return res.status(403).json({ message: 'Insufficient permissions' });
+    }
+  
+    next();
+  };
+  
+  
+  export const validateTaskLinkData = async (req, res, next) => {
+    const { sourceTaskId, targetTaskId, type } = req.body;
+    
+    if (!sourceTaskId || !targetTaskId || !type) {
+      return res.status(400).json({ message: "Missing required fields: sourceTaskId, targetTaskId, type." });
+    }
+    
+    // Check if the type is one of the allowed types
+    const allowedTypes = ['BlockedBy', 'RelatedTo', 'DuplicateOf'];
+    if (!allowedTypes.includes(type)) {
+      return res.status(400).json({ message: `Type must be one of the following: ${allowedTypes.join(', ')}.` });
+    }
+  
+    try {
+      // Check if the source task exists
+      const sourceTask = await Task.findById(sourceTaskId);
+      if (!sourceTask) {
+        return res.status(404).json({ message: "Source task not found." });
+      }
+    
+      // Check if the target task exists
+      const targetTask = await Task.findById(targetTaskId);
+      if (!targetTask) {
+        return res.status(404).json({ message: "Target task not found." });
+      }
+  
+      // If all checks pass, proceed to the next middleware or route handler
+      next();
+    } catch (error) {
+      res.status(500).json({ message: `Server error: ${error.message}` });
+    }
+  };
+  

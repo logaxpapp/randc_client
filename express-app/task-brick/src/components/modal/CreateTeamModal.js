@@ -1,73 +1,106 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
+import { createTeam, updateTeam } from '../../features/team/teamSlice';
 
-const CreateTeamModal = ({ open, onClose }) => {
-  const [teamName, setTeamName] = useState('');
-  const [emails, setEmails] = useState('');
-  const [joinWithoutApproval, setJoinWithoutApproval] = useState(false);
-  const [role, setRole] = useState('');
+const CreateTeamModal = ({ currentTeam = null, onClose, open }) => {
+  const [teamData, setTeamData] = useState({ name: '', description: '' });
+  const dispatch = useDispatch();
 
-  const handleSubmit = () => {
-    // Implement submit logic here
-    console.log({ teamName, emails, joinWithoutApproval, role });
-    onClose(); // Close modal after submit
+  // Assuming tenantId is stored in the Redux state under auth.user
+  const tenantId = useSelector((state) => state.auth.user.tenantId);
+
+  useEffect(() => {
+    // Load current team data into form if editing an existing team
+    if (currentTeam) {
+      setTeamData(currentTeam);
+    } else {
+      // Reset form to initial state when creating a new team
+      setTeamData({ name: '', description: '' });
+    }
+  }, [currentTeam, open]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setTeamData({ ...teamData, [name]: value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (currentTeam) {
+        await dispatch(updateTeam({ tenantId, teamId: currentTeam._id, teamData })).unwrap();
+        toast.success('Team updated successfully');
+      } else {
+        await dispatch(createTeam({ tenantId, teamData })).unwrap();
+        toast.success('Team created successfully');
+      }
+      onClose(); // Close modal after form submission
+    } catch (error) {
+      console.error('Failed operation:', error);
+      toast.error(`Error: ${error.message || 'Failed to create/update team'}`);
+    }
   };
 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-20 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" onClick={onClose}>
-      <div className="relative top-20 mx-auto p-5 border max-w-xl h-96  w-full shadow-lg rounded-md bg-white" onClick={(e) => e.stopPropagation()}>
-        <div className="text-lg font-semibold mb-4">Create a Team</div>
-        <input
-         className="block appearance-none w-full bg-white border border-gray-200 text-gray-700 py-3 mb-4 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-          placeholder="Team Name"
-          value={teamName}
-          onChange={(e) => setTeamName(e.target.value)}
-        />
-        <input
-           className="block appearance-none w-full bg-white border border-gray-200 text-gray-700 py-3 mb-4 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-          placeholder="Invite Members (comma-separated emails)"
-          value={emails}
-          onChange={(e) => setEmails(e.target.value)}
-        />
-        <div className="flex items-center mb-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+    <div className="relative w-full max-w-2xl p-10 mx-4 bg-white rounded-lg shadow-xl">
+      <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-3xl">
+        &times;
+      </button>
+      <h2 className="mb-6 text-3xl font-semibold text-center text-gray-900">
+        {currentTeam ? 'Update Your Team' : 'Create a New Team'}
+      </h2>
+      <p className="mb-8 text-sm text-center text-gray-500">
+        {currentTeam ? 'Modify the team details and click update.' : 'Fill in the details to create a new team within your organization.'}
+      </p>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700">Team Name</label>
           <input
-            id="joinWithoutApproval"
-            type="checkbox"
-            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-            checked={joinWithoutApproval}
-            onChange={(e) => setJoinWithoutApproval(e.target.checked)}
+            id="name"
+            type="text"
+            name="name"
+            value={teamData.name}
+            onChange={handleChange}
+            placeholder="E.g., Development Team"
+            required
+            className="w-full px-4 py-3 mt-1 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
           />
-          <label htmlFor="joinWithoutApproval" className="ml-2 text-sm font-medium text-gray-900">Join without Approval</label>
         </div>
-        <div className=" w-full mb-4">
-          <select
-             className="block appearance-none w-full bg-white border border-gray-200 text-gray-700 py-3 mb-4 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-          >
-            <option value="Admin">Admin</option>
-            <option value="Developer">Developer</option>
-            <option value="User">User</option>
-            {/* Add other roles as needed */}
-          </select>
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700">Team Description</label>
+          <textarea
+            id="description"
+            name="description"
+            value={teamData.description}
+            onChange={handleChange}
+            rows="4"
+            placeholder="Briefly describe the team's purpose and responsibilities."
+            required
+            className="w-full px-4 py-3 mt-1 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
+          />
         </div>
-        <div className="flex justify-end space-x-2">
+        <div className="flex justify-center mt-10">
           <button
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            onClick={handleSubmit}
+            type="submit"
+            className="px-6 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
-            Create
+            {currentTeam ? 'Update Team' : 'Create Team'}
           </button>
           <button
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            onClick={onClose}
+            onClick={onClose} // Define the onClose function to handle modal close
+            className="px-6 py-2 ml-4 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             Cancel
           </button>
         </div>
-      </div>
+      </form>
     </div>
+  </div>
+  
   );
 };
 

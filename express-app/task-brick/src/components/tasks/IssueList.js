@@ -113,7 +113,7 @@ const IssueList = () => {
   }
 
   return (
-    <div className="overflow-auto h-screen bg-custom-gray p-4">
+    <div className="overflow-auto min-h-screen bg-custom-gray p-4">
       <div className=" mx-auto">
         <div className="flex justify-end">
           <button

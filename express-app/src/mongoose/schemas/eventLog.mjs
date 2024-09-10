@@ -1,14 +1,41 @@
 import mongoose from 'mongoose';
+import validator from 'validator';
 
 const eventLogSchema = new mongoose.Schema({
-  tenantId: { 
-    type: String,    //mongoose.Schema.Types.ObjectId, 
-    ref: 'Tenant', 
-    required: true },
-  eventType: { type: String, required: true, enum: ['TaskCreated', 'TaskUpdated', 'TaskCompleted'] },
-  entityId: { type: mongoose.Schema.Types.ObjectId, required: true }, // Assuming this could reference various entities
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  details: { type: mongoose.Schema.Types.Mixed, required: true } // Use Mixed for JSONB equivalent
+  tenantId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Tenant',
+    required: true
+  },
+  eventType: {
+    type: String,
+    required: true,
+    enum: ['TaskCreated', 'TaskUpdated', 'TaskCompleted', 'EventScheduled']
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  participants: [{
+    email: {
+      type: String,
+      validate: [validator.isEmail, 'Invalid email format'],
+      lowercase: true,
+      trim: true
+    },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }
+  }],
+  title: String,
+  start: Date,
+  end: Date,
+  allDay: Boolean,
+  timezone: String,
+  location: String,
+  description: String
 }, { timestamps: true });
 
 const EventLog = mongoose.model('EventLog', eventLogSchema);

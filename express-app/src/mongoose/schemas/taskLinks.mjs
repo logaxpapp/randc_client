@@ -1,3 +1,5 @@
+import mongoose from 'mongoose';
+
 const taskLinksSchema = new mongoose.Schema({
     sourceTaskId: { 
       type: mongoose.Schema.Types.ObjectId, 

@@ -1,89 +1,99 @@
-import { Router } from "express";
-import { taskLinks, tasks } from "../data/mockData.mjs";
-import { v4 as uuidv4 } from 'uuid';
+import express from "express";
+import TaskLink from "../mongoose/schemas/taskLinks.mjs";
+import { body, param, validationResult } from 'express-validator';
+import { validateAndFindTenant, validateTaskLinkData } from "../component/utils/middleware.mjs";
 
-const router = Router();
 
-// Middleware to check if a task link exists
-const findTaskLink = (req, res, next) => {
-  const { taskLinkId } = req.params;
-  const taskLink = taskLinks.find((link) => link.id === parseInt(taskLinkId, 10));
-  
-  if (!taskLink) {
-    return res.status(404).json({ message: "Task link not found" });
+const router = express.Router({ mergeParams: true }); 
+
+// Middleware to check if a task link exists and attach it to the request
+const findTaskLink = async (req, res, next) => {
+  try {
+    const taskLink = await TaskLink.findById(req.params.taskLinkId);
+    if (!taskLink) {
+      return res.status(404).json({ message: "Task link not found" });
+    }
+    req.taskLink = taskLink;
+    next();
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
-  
-  req.taskLink = taskLink;
+};
+
+// Middleware to handle validation results
+const handleValidationErrors = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
   next();
 };
 
-// Validator Middleware for Task Link Data
-const validateTaskLinkData = (req, res, next) => {
-  const { sourceTaskId, targetTaskId, type } = req.body;
+// Validate IDs in params
+const validateIds = [
+ 
+  param('teamId').optional().isMongoId().withMessage('Invalid Team ID'),
+  param('userId').optional().isMongoId().withMessage('Invalid User ID'),
+  handleValidationErrors
+];
 
-  if (!sourceTaskId || !targetTaskId || !type) {
-    return res.status(400).json({ message: "Missing required fields" });
-  }
 
-  // Ensure sourceTaskId and targetTaskId reference existing tasks
-  const sourceTaskExists = tasks.some(task => task.id === sourceTaskId);
-  const targetTaskExists = tasks.some(task => task.id === targetTaskId);
-
-  if (!sourceTaskExists || !targetTaskExists) {
-    return res.status(400).json({ message: "Invalid sourceTaskId or targetTaskId" });
-  }
-
-  next();
-};
 
 // GET all task links
-router.get("/", (req, res) => {
-  res.json(taskLinks);
+router.get('/taskLinks', async (req, res) => {
+  try {
+    // Assuming you want to filter task links by tenantId. Adjust as needed.
+    const tenantId = req.params.tenantId; // or however you access the validated tenant ID
+    const taskLinks = await TaskLink.find({ tenantId: tenantId });
+    res.json(taskLinks);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 });
 
 // GET a single task link by ID
-router.get("/:taskLinkId", findTaskLink, (req, res) => {
+router.get("/taskLinks/:taskLinkId", findTaskLink, (req, res) => {
   res.json(req.taskLink);
 });
 
 // POST a new task link
-router.post("/", validateTaskLinkData, (req, res) => {
+router.post("/taskLinks/", validateTaskLinkData, async (req, res) => {
   const { sourceTaskId, targetTaskId, type } = req.body;
-  const newTaskLink = {
-    id: taskLinks.length + 1, // Simplified ID assignment for mock data
-    sourceTaskId,
-    targetTaskId,
-    type,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-  taskLinks.push(newTaskLink);
-  res.status(201).json(newTaskLink);
+  try {
+    const newTaskLink = new TaskLink({ sourceTaskId, targetTaskId, type });
+    const savedTaskLink = await newTaskLink.save();
+    res.status(201).json(savedTaskLink);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
 });
 
-// PUT to fully replace a task link's details
-router.put("/:taskLinkId", findTaskLink, validateTaskLinkData, (req, res) => {
+// PUT to update a task link's details
+router.put("/taskLinks/:taskLinkId", findTaskLink, validateTaskLinkData, async (req, res) => {
   const { sourceTaskId, targetTaskId, type } = req.body;
-  const updatedTaskLink = {
-    ...req.taskLink,
-    sourceTaskId,
-    targetTaskId,
-    type,
-    updatedAt: new Date().toISOString(),
-  };
-
-  // Find index and replace in the taskLinks array
-  const taskLinkIndex = taskLinks.findIndex((link) => link.id === parseInt(req.params.taskLinkId, 10));
-  taskLinks[taskLinkIndex] = updatedTaskLink;
-
-  res.json(updatedTaskLink);
+  try {
+    req.taskLink.sourceTaskId = sourceTaskId;
+    req.taskLink.targetTaskId = targetTaskId;
+    req.taskLink.type = type;
+    const updatedTaskLink = await req.taskLink.save();
+    res.json(updatedTaskLink);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
 });
 
-// DELETE a task link
-router.delete("/:taskLinkId", findTaskLink, (req, res) => {
-  const taskLinkIndex = taskLinks.findIndex((link) => link.id === parseInt(req.params.taskLinkId, 10));
-  taskLinks.splice(taskLinkIndex, 1);
-  res.status(204).send();
+// DELETE a task link using findByIdAndDelete for consistency with task deletion
+router.delete("/taskLinks/:taskLinkId", validateAndFindTenant, validateIds, async (req, res) => {
+  try {
+    const deletedTaskLink = await TaskLink.findByIdAndDelete(req.params.taskLinkId);
+    if (!deletedTaskLink) {
+      return res.status(404).json({ message: "Task link not found" });
+    }
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to delete task link', error: error.message });
+  }
 });
+
 
 export default router;

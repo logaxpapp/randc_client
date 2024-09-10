@@ -3,7 +3,6 @@ import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import createTransporter from '../helpers/nodeMail.mjs'; 
-import mongoose from 'mongoose';
 import passport from 'passport';
 import User from '../mongoose/schemas/user.mjs'; 
 import Tenant from '../mongoose/schemas/tenant.mjs';
@@ -25,6 +24,7 @@ router.post('/login', (req, res, next) => {
         if (tenantId && !user.tenantId.includes(tenantId)) { // Change .equals to .includes
             return res.status(403).json({ message: 'Access denied for this tenant.' });
         }
+        
 
         // Generate JWT access and refresh tokens
         const accessTokenPayload = {
@@ -34,7 +34,8 @@ router.post('/login', (req, res, next) => {
             tenantId: tenantId,
             iat: Math.floor(Date.now() / 1000) - 30, // 30 seconds before current time
             firstName: user.firstName,
-            lastName: user.lastName
+            lastName: user.lastName,
+           
 
         };
         const accessToken = jwt.sign(accessTokenPayload, process.env.JWT_SECRET, { expiresIn: '1h' });
@@ -55,7 +56,8 @@ router.post('/login', (req, res, next) => {
                 role: user.role,
                 tenantId: tenantId,
                 firstName: user.firstName,
-                lastName: user.lastName
+                lastName: user.lastName,
+               
             },
             accessToken,
             refreshToken
@@ -131,7 +133,7 @@ router.post('/verifyEmail', async (req, res) => {
             // Single tenant association, proceed directly
             return res.status(200).json({
                 message: 'Email verified successfully',
-                tenantId: user.tenantId[0].toString() // Assuming only one tenant ID is present
+                tenantId: user.tenantId[0].toString() 
             });
         } else {
             // No tenants associated, handle accordingly

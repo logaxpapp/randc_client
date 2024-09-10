@@ -2,7 +2,7 @@ import { Router } from "express";
 import Tenant from "../mongoose/schemas/tenant.mjs";
 import multer from 'multer';
 import {  loggerMiddleware } from '../component/utils/middleware.mjs';
-import cloudinary from '../configuration/cloudinaryConfig.mjs'; 
+import { upload } from '../configuration/cloudinaryConfig.mjs'; 
 
 const router = Router();
 router.use(loggerMiddleware);
@@ -18,7 +18,6 @@ router.get("/api/tenants", async (req, res) => {
     }
 });
 
-const upload = multer({ dest: 'uploads/' });
 
 // Adjusted to use TenantId for individual tenant retrieval
 router.get("/api/tenants/:tenantId", async (req, res) => {

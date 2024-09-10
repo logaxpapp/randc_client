@@ -1,5 +1,6 @@
 import express from 'express';
 import SprintTask from '../mongoose/schemas/sprintTask.mjs';
+import Sprint from '../mongoose/schemas/sprint.mjs';
 import { validateObjectId, authenticate, authorize } from '../component/utils/middleware.mjs';
 import { body, validationResult } from 'express-validator';
 
@@ -16,35 +17,81 @@ const handleValidationErrors = (req, res, next) => {
 
 // Validation rules for creating a SprintTask
 const sprintTaskValidationRules = [
-  body('sprintId').isMongoId().withMessage('A valid sprint ID is required'),
-  body('taskId').isMongoId().withMessage('A valid task ID is required')
+  body('taskIds').isArray({ min: 1 }).withMessage('A valid array of task IDs is required'),
+  body('taskIds.*').isMongoId().withMessage('Each task ID must be a valid ID'),
 ];
 
-// Assign a task to a sprint
-router.post('/sprint-tasks', authenticate, authorize(['ProjectManager', 'Admin']), sprintTaskValidationRules, handleValidationErrors, async (req, res) => {
+const validateSprintExistsForTenant = async (req, res, next) => {
+  const { tenantId, sprintId } = req.params;
   try {
-    const { sprintId, taskId } = req.body;
-    const sprintTask = new SprintTask({ sprintId, taskId });
-    await sprintTask.save();
-    res.status(201).json(sprintTask);
+    const sprint = await Sprint.findOne({ _id: sprintId, tenantId: tenantId });
+    if (!sprint) {
+      return res.status(404).json({ message: 'Sprint ID does not exist or does not belong to the tenant' });
+    }
+    next();
   } catch (error) {
-    res.status(500).json({ message: 'Failed to assign task to sprint', error: error.message });
+    console.error('Validation error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
+// POST /sprint-tasks to create multiple sprint-task associations
+// Assign a task to a sprint
+router.post('/sprints/:sprintId/sprint-tasks', authenticate, authorize(['ProjectManager', 'Admin']), sprintTaskValidationRules,  handleValidationErrors, async (req, res) => {
+  const { sprintId } = req.params; // tenantId is used in middleware and doesn't need to be extracted here unless further used
+  const { taskIds } = req.body;
+
+  try {
+    // Logic to handle task assignment to the sprint directly follows
+    const sprintTasks = await Promise.all(taskIds.map(async (taskId) => {
+      const sprintTask = new SprintTask({ sprintId, taskId });
+      await sprintTask.save();
+      return sprintTask;
+    }));
+
+    res.status(201).json(sprintTasks);
+  } catch (error) {
+    console.error('Failed to assign tasks to sprint:', error);
+    res.status(500).json({ message: 'Failed to assign tasks to sprint', error: error.message });
   }
 });
 
+
+
 // List all tasks in a sprint
-router.get('/sprints/:sprintId/tasks', authenticate, validateObjectId, async (req, res) => {
+router.get('/sprints/:sprintId/sprint-tasks', authenticate, async (req, res) => {
   try {
     const { sprintId } = req.params;
-    const sprintTasks = await SprintTask.find({ sprintId }).populate('taskId');
-    res.json(sprintTasks);
+    const sprintTasks = await SprintTask.find({ sprintId })
+      .populate({
+        path: 'taskId',
+        populate: [
+          { path: 'assigneeId', select: ['firstName', 'lastName'] },
+          { path: 'projectId', select: 'name' },
+          { path: 'reporterId', select: ['firstName', 'lastName'] },
+          { path: 'teamId', select: 'name' }
+        ]        
+      });
+
+    res.json(sprintTasks.map(task => ({
+      ...task.toObject(), // or task.toJSON(), if toObject() is not available
+      taskId: {
+        ...task.taskId.toObject(), // make sure to spread the original taskId data
+        assigneeName: task.taskId.assigneeId?.firstName,
+        projectName: task.taskId.projectId?.name,
+        reporterName: task.taskId.reporterId?.firstName,
+        teamName: task.taskId.teamId?.name,
+      }
+    })));
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch tasks for sprint', error: error.message });
   }
 });
 
+
 // Remove a task from a sprint
-router.delete('/sprint-tasks/:sprintTaskId', authenticate, authorize(['ProjectManager', 'Admin']), validateObjectId, async (req, res) => {
+router.delete('/sprint-tasks/sprints/:sprintTaskId', authenticate, authorize(['ProjectManager', 'Admin']), validateObjectId, async (req, res) => {
   try {
     const { sprintTaskId } = req.params;
     const result = await SprintTask.findByIdAndDelete(sprintTaskId);

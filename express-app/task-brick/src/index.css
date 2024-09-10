@@ -3,23 +3,18 @@
 @tailwind utilities;
 
 
+/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600&display=swap');
 
 
-.plus-jakarta sans-regular {
-  font-family: "Plus Jakarta Sans", sans-serif;
+
+p {
+  font-family: "Bitter", serif;
   font-optical-sizing: auto;
   font-weight: 400;
   font-style: normal;
 }
-
-
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;1,100;1,300&display=swap');
-
-/* body{
-    margin: 0;
-    padding:0;
-    font-family: 'Roboto', sans-serif;
-} */
 
 
 @import url('https://cdn.syncfusion.com/ej2/material.css');

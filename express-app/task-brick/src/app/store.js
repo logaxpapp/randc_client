@@ -6,6 +6,10 @@ import userSlice from '../features/user/userSlice';
 import profilePictureReducer from '../features/user/profilePictureSlice'; 
 import teamSlice from '../features/team/teamSlice'; 
 import taskSlice from '../features/tasks/taskSlice';
+import sprintSlice from '../features/sprint/sprintSlice';
+import sprintTaskSlice from '../features/sprint/sprintTaskSlice'; 
+import commentSlice from '../features/comment/commentSlice';
+import eventLogSlice from '../features/eventlog/eventLogSlice';
 
 
 export const store = configureStore({
@@ -16,5 +20,9 @@ export const store = configureStore({
     profilePicture: profilePictureReducer,
     teams: teamSlice,
     tasks: taskSlice,
+    sprints: sprintSlice,
+    sprintTasks: sprintTaskSlice,
+    comments: commentSlice,
+    eventLogs: eventLogSlice,
   },
 });

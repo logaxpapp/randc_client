@@ -6,6 +6,7 @@ import PartyImage from '../../component/assets/images/party.png';
 import Calendar from '../../component/assets/images/calendar.png';
 import KeynoteCard from './KeynoteCard ';
 import NewsLetter from './NewsLetter';
+import DestinationCarousel from './DestinationCarousel';
 
 const HomePage = () => {
   return (
@@ -49,8 +50,10 @@ const HomePage = () => {
   <section className="mt-8 bg-white shadow rounded-lg p-6">
     <div className="mt-6">
       <UpcomingTasks />
+    
     </div>
   </section>
+  <DestinationCarousel />
   <section className="mt-8 bg-white  rounded-lg ">
     <div className="mt-6">
       <NewsLetter />

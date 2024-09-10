@@ -38,6 +38,7 @@ const CreateTaskForm = () => {
     imageUrls: [],
     tags: [],
     teamId: '',
+    parentId: '',
   });
 
   useEffect(() => {
@@ -110,6 +111,7 @@ const CreateTaskForm = () => {
           imageUrls: [],
           tags: [],
           teamId: '',
+          parentId: '',
         });
       } else {
         navigate("/dashboard/issueboard");

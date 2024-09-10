@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchTasks, patchTask } from '../../features/tasks/taskSlice';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { FaChevronDown, FaChevronUp, FaSearch } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaSearch, FaFileAlt } from 'react-icons/fa';
 import { FaArrowUp, FaMedal, FaBalanceScale, FaBan, 
-  FaExclamationTriangle,FaExclamationCircle, FaClock, 
-  FaThumbsDown, FaBolt,  FaSkullCrossbones  } from 'react-icons/fa';
+  FaExclamationTriangle,FaExclamationCircle, FaClock, FaCalendarAlt, 
+  FaThumbsDown, FaBolt,  FaSkullCrossbones, FaEdit  } from 'react-icons/fa';
 import KanbanHeader from './KanbanHeader';
 import TimeLogComponent from './TimeLogComponent';
 
@@ -114,7 +114,7 @@ const priorityIcons = {
                     className="w-80 bg-gray-100 p-2 rounded-md shadow space-y-2"
                   >
                     <div className="flex justify-between items-center p-2 bg-white rounded-md">
-                      <h3 className="text-lg font-bold">
+                      <h3 className="text-md font-semibold">
                         {column} ({taskCountByStatus(column)})
                       </h3>
                       <button onClick={() => toggleColumn(column)}>
@@ -124,7 +124,7 @@ const priorityIcons = {
                     <hr className="my-2 border-2 border-t  border-white" />
 
                     {!collapsedColumns[column] && (
-                    <div className="space-y-4 overflow-auto min-h-screen mb-4">
+                    <div className="space-y-4 overflow-auto min-h-screen mb-4 text-xs">
                       {filteredTasks
                         .filter((task) => task.status === column)
                         .map((task, index) => (
@@ -143,18 +143,33 @@ const priorityIcons = {
                                 <div className="flex items-center justify-between mb-2">
                                   <div className="flex items-center gap-2">
                                     <AssigneeInitials assignee={task.assigneeId} />
-                                    <h4 className="font-bold text-sm">{task.title}</h4>
+                                    <h4 className="font-bold text-xs">{task.title}</h4>
                                   </div>
                                   <div className="flex items-center">
                                     {priorityIcons[task.priority] || priorityIcons['None']} {/* Default to 'None' if no match */}
                                   </div>
                                 </div>
-                                <p className="text-gray-600 text-sm truncate">{task.summary}</p>
-                                <hr className="my-2 border-t border-gray-200" />
+                                <p className="text-gray-600 text-xs truncate">{task.summary}</p>
+                                <hr className="my-1 border-t border-gray-200" />
                                 <button 
-                                className="text-sm text-black hover:bg-gray-200 font-bold  px-2 rounded"
+                                className="text-sm text-black hover:bg-gray-200 font-bold py-2  px-2 rounded-full"
                                 onClick={() => handleOpenTimeLog(task._id)}>
-                                <FaClock className="mr-2" size={20} />
+                                <FaClock className="rounded-full text-blue-800" title="Schedule Task" size={15} />
+                              </button>
+                              <button 
+                                className="text-sm text-black hover:bg-gray-200 font-bold py-2  px-2 rounded-full"
+                                onClick={() => handleOpenTimeLog(task._id)}>
+                                <FaFileAlt className="rounded-full text-blue-800" title="Schedule Task" size={15} />
+                              </button>
+                              <button
+                              className="text-sm text-black hover:bg-gray-200 font-bold py-2  px-2 rounded-full"
+                              onClick={() => handleOpenTimeLog(task._id)}>
+                                <FaCalendarAlt className="rounded-full text-blue-800" title="Schedule Task" size={15} />
+                              </button>
+                              <button
+                              className="text-sm text-black hover:bg-gray-200 font-bold py-2  px-2 rounded-full"
+                              onClick={() => handleOpenTimeLog(task._id)}>
+                                <FaEdit className="rounded-full text-blue-800" title="Schedule Task" size={15} />
                               </button>
                               </div>
                             )}

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { AppBar, Toolbar, IconButton, Box, InputBase, Menu, MenuItem, Button } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
+import HomeIcon from '@mui/icons-material/Home'; 
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
 import { Settings } from '@mui/icons-material';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
@@ -9,9 +10,12 @@ import GroupIcon from '@mui/icons-material/Group';
 import InvitePeopleModal from '../modal/InvitePeopleModal';
 import CreateTeamModal from '../modal/CreateTeamModal';
 import  MyTeamModal from '../modal/MyTeamModal';
+import CreateTeamMembersModal from '../modal/CreateTeamMembersModal';
 import SearchPeopleModal from '../modal/SearchPeopleModal';
 import Hero from '../../assets/images/hero.png';
 import useThemeSwitcher from '../themes/useThemeSwitcher';
+import Logo from '../../assets/images/logo.png';
+import { useAuth } from '../../context/AuthContext';
 
 function DashboardHeader() {
   const [menuStates, setMenuStates] = useState({
@@ -25,6 +29,19 @@ function DashboardHeader() {
   });
   const navigate = useNavigate();
   const { currentTheme } = useThemeSwitcher();
+  const { user, logout } = useAuth(); 
+
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await logout(); // Perform logout
+      navigate('/login'); // Redirect to login page
+    } catch (error) {
+      console.error("Failed to log out", error);
+    }
+  };
+
 
   const handleMenuClick = (event, menu) => {
     // Close any already open menu before opening a new one
@@ -66,6 +83,17 @@ function DashboardHeader() {
   const [createTeamModalOpen, setCreateTeamModalOpen] = useState(false);
   const [searchPeopleModalOpen, setSearchPeopleModalOpen] = useState(false);
   const [myTeamModalOpen, setMyTeamModalOpen] = useState(false);
+  const [createTeamMembersModalOpen, setCreateTeamMembersModalOpen] = useState(false);
+
+  const handleOpenCreateTeamMembersModal = () => {
+    setCreateTeamMembersModalOpen(true);
+    handleMenuClose('teams'); // Close the teams menu
+  };
+
+  const handleCloseCreateTeamMembersModal = () => {
+    setCreateTeamMembersModalOpen(false);
+  };
+
 
   const handleOpenInviteModal = () => {
     setInviteModalOpen(true);
@@ -154,6 +182,10 @@ function DashboardHeader() {
           <GroupIcon />
           Create a Team
         </MenuItem>
+        <MenuItem onClick={handleOpenCreateTeamMembersModal}>
+          <GroupAddIcon />
+          Create a Team with Members
+        </MenuItem>
         <MenuItem onClick={handleOpenSearchPeopleModal}>
           <SearchIcon />
           Search people and teams
@@ -165,12 +197,22 @@ function DashboardHeader() {
       <CreateTeamModal open={createTeamModalOpen} onClose={handleCloseCreateTeamModal} />
       <SearchPeopleModal open={searchPeopleModalOpen} onClose={handleCloseSearchPeopleModal} />
       <MyTeamModal open={myTeamModalOpen} onClose={handleCloseMyTeamModal} />
+      <CreateTeamMembersModal open={createTeamMembersModalOpen} onClose={ handleCloseCreateTeamMembersModal} />
     </>
   );
 
   return (
     <AppBar position="static" sx={{ backgroundColor: currentTheme.bgColor, color: currentTheme.textColor }}>
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexDirection: { xs: 'column', sm: 'row' } }}>
+      {user?.isAdmin ? (
+          <IconButton edge="start" color="inherit" aria-label="logo" component={RouterLink} to="/">
+            <img src={Logo} alt="Logo" style={{ width: 50 }} />
+          </IconButton>
+        ) : (
+          <IconButton edge="start" color="inherit" aria-label="home" onClick={() => navigate('/')}>
+            <HomeIcon />
+          </IconButton>
+        )}
         {/* Left section */}
         <Box>
           <Button sx={{ fontSize: { xs: '10px', sm: '12px' }, mr: { xs: 0, sm: 1 }, mb: { xs: 1, sm: 0 } }} color="inherit" onClick={(e) => handleMenuClick(e, 'projects')}>
@@ -258,6 +300,9 @@ function DashboardHeader() {
             <img src={Hero} alt="Profile" style={{ width: '32px', height: '32px', borderRadius: '50%' }} />
           </IconButton>
           {renderMenu('profile')}
+        </Box>
+        <Box>
+          <Button onClick={handleLogout} color="inherit">Logout</Button>
         </Box>
       </Toolbar>
     </AppBar>

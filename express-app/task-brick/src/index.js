@@ -12,6 +12,7 @@ import { registerLicense } from '@syncfusion/ej2-base';
 import { StateProvider } from './context/StateContext';
 
 
+
 registerLicense('Ngo9BigBOggjHTQxAR8/V1NAaF1cWmhIfEx1RHxQdld5ZFRHallYTnNWUj0eQnxTdEFjW31ccXFURWJfUEFwXw==');
 
 const container = document.getElementById('root');

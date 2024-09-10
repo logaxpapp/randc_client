@@ -11,6 +11,7 @@ const HeroPage = () => {
 
 return (
   <div className="border-b dark:bg-gray-700">
+    
     <section className="container mx-auto px-4 py-12">
       <div className=" grid lg:grid-cols-2 gap-8 items-center">
         <div className=" text-center lg:text-left">
@@ -24,10 +25,10 @@ return (
             A unified platform to seamlessly plan, track, and execute your work.
           </p>
           <div className="flex justify-center lg:justify-start gap-4 mb-4">
-            <Link to="/start" className="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-110 animate-pulse">
+            <Link to="/signup" className="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-110 animate-pulse">
               Start Your Free Trial
             </Link>
-            <Link to="/how-it-works" className="bg-transparent border border-blue-500 text-blue-500 font-semibold py-2 px-4 rounded-lg  hover:bg-blue-500 hover:text-white transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-110">
+            <Link to="/how_it_works" className="bg-transparent border border-blue-500 text-blue-500 font-semibold py-2 px-4 rounded-lg  hover:bg-blue-500 hover:text-white transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-110">
               How It Works
             </Link>
           </div>
@@ -38,9 +39,9 @@ return (
             <button className="border border-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-pink-200 transition duration-300">
               Scrum
             </button>
-            <button className="border border-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-yellow-200 transition duration-300">
+            <Link to="/gant-chart" className="border border-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-yellow-200 transition duration-300">
               Gantt Charts
-            </button>
+            </Link>
           </div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

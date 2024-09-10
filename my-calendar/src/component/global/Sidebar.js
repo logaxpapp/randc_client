@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import {
-  FaCalendarAlt, FaVideo, FaUser, FaAddressCard, FaChevronDown, FaChevronUp,
-  FaBars, FaTimes, FaPlusCircle, FaUsersCog, FaBookmark, FaLayerGroup, FaPlusSquare, FaBusinessTime
-} from 'react-icons/fa';
+import { FaCalendarAlt, FaVideo, FaUser, FaAddressCard, FaChevronDown, FaUserShield, FaChevronUp, FaBars, FaTimes, FaPlusCircle, FaUsersCog, FaBookmark, FaLayerGroup, FaPlusSquare, FaBusinessTime, FaCog, FaSignOutAlt } from 'react-icons/fa';
 
-const Sidebar = () => {
+const Sidebar = ({ handleLogout }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [appointmentOpen, setAppointmentOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
+  const [eventsOpen, setEventsOpen] = useState(false);
+  const [clientsOpen, setClientsOpen] = useState(false);
 
   const activeLinkStyle = {
     backgroundColor: "black",
@@ -28,8 +27,8 @@ const Sidebar = () => {
           <NavLink to="/dashboard" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>
             <MenuItem icon={<FaCalendarAlt className="text-purple-900" />} text="Calendar" />
           </NavLink>
-          <MenuItem icon={<FaLayerGroup className="text-blue-500" />} text="Manage Clients" onClick={() => setAppointmentOpen(!appointmentOpen)} dropDownIcon={appointmentOpen ? <FaChevronUp /> : <FaChevronDown />} />
-          {appointmentOpen && (
+          <MenuItem icon={<FaLayerGroup className="text-blue-500" />} text="Manage Clients" onClick={() => setClientsOpen(!clientsOpen)} dropDownIcon={appointmentOpen ? <FaChevronUp /> : <FaChevronDown />} />
+          {clientsOpen && (
             <>
               <NavLink to="/create-tenant" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>
                 <SubMenuItem icon={<FaPlusSquare className="text-green-600" />} text="New Client" />
@@ -47,6 +46,14 @@ const Sidebar = () => {
               </NavLink>
               <NavLink to="/dashboard/appointments" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>
                 <SubMenuItem icon={<FaBookmark className="text-red-400" />} text="Appointments" />
+
+              </NavLink>
+              <NavLink to="/dashboard/events-list" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>
+                <SubMenuItem icon={<FaPlusCircle className="text-blue-600" />} text="Google Events" />
+              </NavLink>
+              <NavLink to="/dashboard/add-event" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>
+                <SubMenuItem icon={<FaBookmark className="text-red-400" />} text="Create Google Events" />
+                
               </NavLink>
             </>
           )}
@@ -61,32 +68,55 @@ const Sidebar = () => {
               </NavLink>
             </>
           )}
+            <MenuItem icon={<FaUserShield className="text-green-500" />} text="Manage Events" onClick={() => setEventsOpen(!eventsOpen)} dropDownIcon={eventsOpen ? <FaChevronUp /> : <FaChevronDown />} />
+          {eventsOpen && (
+            <>
+              <NavLink to="/dashboard/create-events" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>
+                <SubMenuItem icon={<FaPlusCircle className="text-red-400" />} text="New Events" />
+              </NavLink>
+              <NavLink to="/dashboard/events" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>
+                <SubMenuItem icon={<FaUsersCog className="text-red-400" />} text="Events" />
+              </NavLink>
+            </>
+          )}
         </Section>
 
-      
+        {/* Calendar Section */}
+        <Section title="Integrations">
+          <NavLink to="/dashboard/google-calendar" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>
+            <MenuItem icon={<FaCalendarAlt className="text-red-400" />} text="Stack Overflow" />
+          </NavLink>
+          <NavLink to="/dashboard/apple-calendar" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>
+            <MenuItem icon={<FaCalendarAlt className="text-yellow-500" />} text="Loga Video" />
+          </NavLink>
+          <NavLink to="/dashboard/calendar-integration-page" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>
+            <MenuItem icon={<FaCalendarAlt className="text-blue-400" />} text="Services Integration" />
+          </NavLink>
+        </Section>
+        
 
-<Section title="Calendar">
-  <p className="font-semibold text-sm text-gray-400 px-2">Integration</p>
-  <NavLink to="/google-calendar" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>
-    <MenuItem icon={<FaCalendarAlt className="text-red-400" />} text="Google Calendar" />
-  </NavLink>
-  <NavLink to="/apple-calendar" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>
-    <MenuItem icon={<FaCalendarAlt className="text-yellow-500" />} text="Apple Calendar" />
-  </NavLink>
-  <NavLink to="/outlook-calendar" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>
-    <MenuItem icon={<FaCalendarAlt className="text-blue-400" />} text="Outlook Calendar" />
-  </NavLink>
-</Section>
+        Video Call Section
+        <Section title="Video Call">
+          <p className="text-sm text-gray-400 px-2 mt-2">Integrate Video Capabilities</p>
+          <NavLink to="/dashboard/zoom" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>
+            <MenuItem icon={<FaVideo className="text-blue-500" />} text="MsEvents" />
+          </NavLink>
+          <NavLink to="/dashboard/ms-events" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>
+            <MenuItem icon={<FaVideo className="text-red-500" />} text="Google Meet" />
+          </NavLink>
+        </Section>
+        <p className="text-sm text-gray-400 px-2 mt-2"></p>
 
-<Section title="Video Call">
-  <p className="text-sm text-gray-400 px-2 mt-2">Integrate Video Capabilities</p>
-  <NavLink to="/zoom" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>
-    <MenuItem icon={<FaVideo className="text-blue-500" />} text="Zoom" />
-  </NavLink>
-  <NavLink to="/google-meet" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>
-    <MenuItem icon={<FaVideo className="text-red-500" />} text="Google Meet" />
-  </NavLink>
-</Section>
+        {/* Settings Section */}
+        <Section title="Settings">
+          <NavLink to="/settings" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>
+            <MenuItem icon={<FaCog className="text-purple-600" />} text="Settings" />
+          </NavLink>
+          <div onClick={handleLogout} className="flex items-center p-2 hover:bg-gray-500 hover:text-white cursor-pointer transition-colors duration-150">
+            <FaSignOutAlt className="mr-2 text-red-600" />
+            <span className="font-medium">Logout</span>
+          </div>
+        </Section>
       </div>
     </div>
   );
@@ -95,9 +125,7 @@ const Sidebar = () => {
 const Section = ({ title, children }) => (
   <div>
     <h2 className="text-lg font-thin mb-2 px-2">{title}</h2>
-    <div className="bg-gray-100  p-2">
-      {children}
-    </div>
+    <div className="bg-gray-100 p-2">{children}</div>
   </div>
 );
 

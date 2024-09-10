@@ -42,8 +42,8 @@ const ThemeSelector = () => {
           },
         }}
       >
-        <Typography variant="h6" sx={{ p: 2, color: currentTheme.primaryColor }}>
-          Choose Theme
+        <Typography variant="h6" sx={{ p: 1, color: currentTheme.primaryColor }}>
+          Pick Theme
         </Typography>
         <Divider sx={{ bgcolor: currentTheme.textColor }} />
         {themes.map((theme) => (
@@ -63,7 +63,18 @@ const ThemeSelector = () => {
                 <PaletteIcon sx={{ color: theme.primaryColor }} />
               </Tooltip>
             </ListItemIcon>
-            <ListItemText primary={theme.name} />
+            <ListItemText 
+            primary={theme.name} 
+            sx={{
+              '.MuiTypography-root': { // Targets the Typography component within ListItemText
+                fontSize: '0.675rem', // Reduces the font size
+                textTransform: 'uppercase', // Changes the text transform to uppercase
+                letterSpacing: 2, // Changes the letter spacing to 2px
+                lineHeight: 1.2, // Changes the line height to 1.2  
+
+              }
+            }} 
+          />
           </MenuItem>
         ))}
       </Menu>

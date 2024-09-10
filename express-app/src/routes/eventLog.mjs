@@ -1,75 +1,96 @@
-import { Router } from "express";
-import { eventLogs, users, tenants } from "../data/mockData.mjs";
-import { v4 as uuidv4 } from 'uuid';
+import { Router } from 'express';
+import EventLog from '../mongoose/schemas/eventLog.mjs';
+import User from '../mongoose/schemas/user.mjs';
+import Tenant from '../mongoose/schemas/tenant.mjs';
+import { body, param, validationResult } from 'express-validator';
+import { validateAndFindTenant } from '../component/utils/middleware.mjs';
 
 const router = Router();
 
-// Middleware to check if an event log exists
-const findEventLog = (req, res, next) => {
-  const { eventLogId } = req.params;
-  const eventLog = eventLogs.find((log) => log.id === parseInt(eventLogId, 10));
-  
-  if (!eventLog) {
-    return res.status(404).json({ message: "Event log not found" });
+// Middleware to handle validation results
+const handleValidationErrors = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
   }
-  
-  req.eventLog = eventLog;
   next();
 };
 
 // Validator Middleware for Event Log Data
-const validateEventLogData = (req, res, next) => {
-  const { tenantId, eventType, entityId, userId, details } = req.body;
+const eventLogValidation = [
+  body('eventType').isIn(['TaskCreated', 'TaskUpdated', 'TaskCompleted', 'EventScheduled']),
+  body('userId').isMongoId(),
+  body('participants.*.email').optional().isEmail(),
+  body('participants.*.user').optional().isMongoId(),
+  body('title').optional().isString(),
+  body('start')
+  .isISO8601()
+  .withMessage('Start date must be a valid ISO 8601 date')
+  .custom((value, { req }) => new Date(value) < new Date(req.body.end))
+  .withMessage('Start date must be before end date'),
+  body('end')
+  .isISO8601()
+  .withMessage('End date must be a valid ISO 8601 date')
+  .custom((value, { req }) => new Date(value) > new Date())
+  .withMessage('End date must be in the future'),
+  body('allDay').optional().isBoolean(),
+  body('timezone').optional().isString(),
+  body('location').optional().isString(),
+  body('description').optional().isString(),
+  handleValidationErrors
+];
 
-  if (!tenantId || !eventType || !entityId || !userId || !details) {
-    return res.status(400).json({ message: "Missing required fields" });
+// Middleware to check if an event log exists within the tenant context
+const findEventLogWithinTenant = async (req, res, next) => {
+  try {
+    const eventLog = await EventLog.findOne({ _id: req.params.eventLogId, tenantId: req.params.tenantId });
+    if (!eventLog) {
+      return res.status(404).json({ message: 'Event log not found for this tenant' });
+    }
+    req.eventLog = eventLog;
+    next();
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to find event log', error });
   }
-
-  // Ensure tenantId and userId reference existing entities
-  const tenantExists = tenants.some(tenant => tenant.id === tenantId);
-  const userExists = users.some(user => user.id === userId);
-
-  if (!tenantExists || !userExists) {
-    return res.status(400).json({ message: "Invalid tenantId or userId" });
-  }
-
-  next();
 };
 
-// GET all event logs
-router.get("/", (req, res) => {
-  res.json(eventLogs);
+// GET all event logs for a tenant
+router.get('/tenants/:tenantId/events', validateAndFindTenant, async (req, res) => {
+  try {
+    const eventLogs = await EventLog.find({ tenantId: req.tenant._id }).populate('userId');
+    res.json(eventLogs);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to get event logs for tenant', error });
+  }
 });
 
-// GET a single event log by ID
-router.get("/:eventLogId", findEventLog, (req, res) => {
+// GET a single event log by ID within a tenant
+router.get('/tenants/:tenantId/events/:eventLogId', [validateAndFindTenant, findEventLogWithinTenant], (req, res) => {
   res.json(req.eventLog);
 });
 
-// POST a new event log
-router.post("/", validateEventLogData, (req, res) => {
-  const { tenantId, eventType, entityId, userId, details } = req.body;
-  const newEventLog = {
-    id: eventLogs.length + 1, // For simplicity in mock data
-    tenantId,
-    eventType,
-    entityId,
-    userId,
-    details,
-    createdAt: new Date().toISOString(),
-  };
-  eventLogs.push(newEventLog);
-  res.status(201).json(newEventLog);
+// POST a new event log for a tenant
+router.post('/tenants/:tenantId/events', [validateAndFindTenant, eventLogValidation], async (req, res) => {
+  try {
+    const eventLog = new EventLog({ ...req.body, tenantId: req.tenant._id });
+    await eventLog.save();
+    res.status(201).json(eventLog);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to create event log for tenant', error });
+  }
 });
 
-// Since EventLogs typically don't change, PUT and PATCH may not be necessary.
-// If you do need to update logs (not common practice), ensure it's for a valid reason.
 
-// DELETE an event log (use with caution, typically event logs are not deleted)
-router.delete("/:eventLogId", findEventLog, (req, res) => {
-  const eventLogIndex = eventLogs.findIndex((log) => log.id === parseInt(req.params.eventLogId, 10));
-  eventLogs.splice(eventLogIndex, 1);
-  res.status(204).send();
+// DELETE an event log within a tenant
+router.delete('/tenants/:tenantId/events/:eventLogId', [validateAndFindTenant, findEventLogWithinTenant], async (req, res) => {
+  try {
+    await req.eventLog.remove();
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to delete event log for tenant', error });
+  }
 });
+
+// Other routes...
 
 export default router;

@@ -18,12 +18,12 @@ const validRoles = ['Admin', 'ProjectManager', 'Developer', 'User'];
 
 // Invite a user to a tenant
 router.post('/api/tenants/:tenantId/invite', validateAndFindTenant, async (req, res) => {
-    const { email, role } = req.body;
+    const { emails, role } = req.body;
     const tenantId = req.tenant._id;
 
-    // Validate the email format using validator
-    if (!validator.isEmail(email)) {
-        return res.status(400).json({ error: 'Invalid email format.' });
+    // Check if emails is an array and every email is valid
+    if (!Array.isArray(emails) || !emails.every(email => validator.isEmail(email))) {
+        return res.status(400).json({ error: 'Invalid email format in the list.' });
     }
 
     // Validate the role
@@ -32,32 +32,37 @@ router.post('/api/tenants/:tenantId/invite', validateAndFindTenant, async (req, 
     }
 
     try {
-        const token = uuidv4();
-        const registrationUrl = `${process.env.FRONTEND_URL}/register?token=${token}&tenantId=${tenantId}`;
+        // Send an invite for each email
+        await Promise.all(emails.map(async (email) => {
+            const token = uuidv4();
+            const registrationUrl = `${process.env.FRONTEND_URL}register?token=${token}&tenantId=${tenantId}`;
 
-        // Retrieve tenant name
-        const tenant = await Tenant.findById(tenantId);
-        const tenantName = tenant.name;
+            await new Invitation({
+                email,
+                tenantId,
+                role,
+                token,
+                used: false,
+                expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // Token expiration (e.g., 24 hours)
+            }).save();
 
-        await new Invitation({
-            email,
-            tenantId,
-            role,
-            token,
-            used: false,
-            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // Token expiration (e.g., 24 hours)
-        }).save();
+              // Retrieve tenant name
+                const tenant = await Tenant.findById(tenantId);
+                const tenantName = tenant.name;
 
-        // Send registration email with tenantName
-        await sendRegistrationEmail(email, registrationUrl, tenantName);
 
-        res.status(200).json({ message: 'Invitation sent successfully.' });
+            // Send registration email with tenantName
+            await sendRegistrationEmail(email, registrationUrl, tenantName);
+        }));
+
+        res.status(200).json({ message: 'Invitations sent successfully.' });
     } catch (error) {
-        console.error("Error sending invitation:", error.message, error.stack);
-        return res.status(500).json({ error: 'Failed to send invitation.', details: error.message });
+        console.error("Error sending invitations:", error.message, error.stack);
+        return res.status(500).json({ error: 'Failed to send invitations.', details: error.message });
     }
     
 });
+
 
 /// Register a user from an invitation
 router.post('/api/register', async (req, res) => {
@@ -68,6 +73,9 @@ router.post('/api/register', async (req, res) => {
         if (!invitation) {
             return res.status(400).json({ error: 'Invalid or expired invitation token.' });
         }
+
+           // Extract role from the invitation
+        const {  role } = invitation;
 
         // Check if user already exists
         let user = await User.findOne({ email: invitation.email });
@@ -97,13 +105,13 @@ router.post('/api/register', async (req, res) => {
             }
         } else {
             // New user, create account
-            const hashedPassword = await bcrypt.hash(password, 10);
             user = new User({
                 email: invitation.email,
                 firstName,
                 lastName,
-                passwordHash: hashedPassword,
-                tenantId: [invitation.tenantId], // Initialize tenantId array with the invitation's tenantId
+                role,
+                passwordHash: password, // Plain password here
+                tenantId: [invitation.tenantId],
             });
             await user.save();
 

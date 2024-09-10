@@ -111,115 +111,154 @@ const handleUpdateChange = (index, fieldName, value) => {
           toast.error(error.response?.data?.message || 'Failed to create project.');
       }
   };
-    return (
-        <div className="max-w-2xl mx-auto p-12 mt-5 bg-white shadow-md rounded-md">
-            <h2 className="text-xl font-bold mb-4">Create a New Project</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="mb-4">
-                    <label htmlFor="name" className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">Name:</label>
-                    <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        value={projectDetails.name}
-                        onChange={handleChange}
-                        placeholder="Name"
-                        required
-                        className="appearance-none block w-full bg-gray-200 text-gray-700 border  border-gray-200 rounded py-4 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                    />
-                </div>
-                <div className="mb-4">
-                    <label htmlFor="description" className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">Description:</label>
-                    <textarea
-                        id="description"
-                        name="description"
-                        value={projectDetails.description}
-                        onChange={handleChange}
-                        placeholder="Description"
-                        required
-                        className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                    />
-                </div>
-                <div className="mb-4">
-                    <label htmlFor="status" className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">Status:</label>
-                    <select
-                        id="status"
-                        name="status"
-                        value={projectDetails.status}
-                        onChange={handleChange}
-                        required
-                        className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                    >
-                        <option value="Active">Active</option>
-                        <option value="Completed">Completed</option>
-                        <option value="OnHold">On Hold</option>
-                    </select>
-                </div>
-                <div className="mb-4">
-                    <label htmlFor="objectives" className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">Objectives:</label>
-                    <textarea
-                        id="objectives"
-                        name="objectives"
-                        value={projectDetails.objectives}
-                        onChange={handleChange}
-                        placeholder="Objectives"
-                        required
-                        className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                    />
-                </div>
-                <div className="mb-4">
-                    <label htmlFor="deadline" className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">Deadline:</label>
-                    <input
-                        type="date"
-                        id="deadline"
-                        name="deadline"
-                        value={projectDetails.deadline}
-                        onChange={handleChange}
-                        required
-                        className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                    />
-                </div>
-                <div>
-            <h2 className="text-lg font-semibold">Updates:</h2>
-            {projectDetails.updates.map((update, index) => (
-                <div key={index} className="grid grid-cols-2 gap-4 mb-4 items-center">
-                    <input
-                        type="text"
-                        className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                        placeholder="Update Content"
-                        name="content"
-                        value={update.content}
-                        onChange={(e) => handleUpdateChange(index, 'content', e.target.value)}
-                    />
-                    <input
-                        type="date"
-                        className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                        placeholder="Update Date"
-                        name="date"
-                        value={update.date}
-                        onChange={(e) => handleUpdateChange(index, 'date', e.target.value)}
-                    />
-                    {index === projectDetails.updates.length - 1 && (
-                        <div className="col-start-3 flex justify-end">
-                            <button type="button" onClick={addUpdateField} className="bg-blue-500 text-white py-2 px-4 rounded-md">
-                                <FontAwesomeIcon icon={faPlus} style={{ fontSize: '0.75rem' }} />
-                            </button>
-                        </div>
-                    )}
-                    {index !== projectDetails.updates.length - 1 && (
-                        <div className="col-start-3 flex justify-end">
-                            <button type="button" onClick={() => removeUpdateField(index)} className="bg-red-500 text-white py-2 px-4 rounded-md">
-                                <FontAwesomeIcon icon={faTrash} style={{ fontSize: '0.75rem' }} />
-                            </button>
-                        </div>
-                    )}
-                </div>
-            ))}
-        </div>
-                <button type="submit" className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 focus:outline-none focus:bg-blue-600">Create Project</button>
-            </form>
-        </div>
-    );
+
+  const resetForm = () => {
+    setProjectDetails({
+        name: '',
+        description: '',
+        status: '',
+        updates: [{ content: '', date: '' }],
+        objectives: '',
+        deadline: '',
+    });
+};
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="max-w-4xl w-full space-y-8 bg-white p-12 shadow rounded-lg">
+        <h2 className="text-3xl font-semibold text-center text-gray-900">Project Creation</h2>
+        <p className="mt-2 text-sm text-gray-500 text-center">Provide details about the new project.</p>
+        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+          <div>
+            <label htmlFor="name" className="text-sm font-medium text-gray-700">Project Name</label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              required
+              placeholder="Enter project name"
+              value={projectDetails.name}
+              onChange={handleChange}
+              className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+            />
+          </div>
+          
+          <div>
+            <label htmlFor="description" className="text-sm font-medium text-gray-700">Project Description</label>
+            <textarea
+              id="description"
+              name="description"
+              rows="3"
+              required
+              placeholder="Describe the project"
+              value={projectDetails.description}
+              onChange={handleChange}
+              className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border border-gray-300 rounded-md"
+            ></textarea>
+          </div>
+  
+         {/* Objectives Field */}
+<div>
+  <label htmlFor="objectives" className="block text-sm font-medium text-gray-700">Objectives</label>
+  <textarea
+    id="objectives"
+    name="objectives"
+    rows="3"
+    required
+    placeholder="Outline the project objectives"
+    value={projectDetails.objectives}
+    onChange={handleChange}
+    className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border border-gray-300 rounded-md"
+  ></textarea>
+</div>
+
+{/* Status Field */}
+<div>
+  <label htmlFor="status" className="block text-sm font-medium text-gray-700">Status</label>
+  <select
+    id="status"
+    name="status"
+    value={projectDetails.status}
+    onChange={handleChange}
+    className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+  >
+    <option value="Active">Active</option>
+    <option value="Completed">Completed</option>
+    <option value="OnHold">On Hold</option>
+  </select>
+</div>
+
+{/* Deadline Field */}
+<div>
+  <label htmlFor="deadline" className="block text-sm font-medium text-gray-700">Deadline</label>
+  <input
+    type="date"
+    id="deadline"
+    name="deadline"
+    value={projectDetails.deadline}
+    onChange={handleChange}
+    required
+    className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+  />
+</div>
+
+{/* Project Updates */}
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">Project Updates</label>
+  {projectDetails.updates.map((update, index) => (
+    <div key={index} className="flex items-end gap-2 mb-4">
+      <input
+        type="text"
+        placeholder="Update content"
+        className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        value={update.content}
+        onChange={(e) => handleUpdateChange(index, 'content', e.target.value)}
+      />
+      <input
+        type="date"
+        className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        value={update.date}
+        onChange={(e) => handleUpdateChange(index, 'date', e.target.value)}
+      />
+      <button
+        type="button"
+        onClick={() => removeUpdateField(index)}
+        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded focus:outline-none transition duration-150 ease-in-out"
+      >
+        Remove
+      </button>
+    </div>
+  ))}
+  <button
+    type="button"
+    onClick={addUpdateField}
+    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded focus:outline-none transition duration-150 ease-in-out"
+  >
+    Add Update
+  </button>
+</div>
+
+
+  
+          <div className="flex gap-4">
+            <button
+              type="submit"
+              className="flex-grow bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded focus:outline-none focus:bg-blue-700 transition duration-150 ease-in-out"
+            >
+              Create Project
+            </button>
+            <button
+              type="button"
+              onClick={resetForm}
+              className="flex-grow bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded focus:outline-none focus:bg-gray-700 transition duration-150 ease-in-out"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+  
 };
 
 export default PrivateProject;

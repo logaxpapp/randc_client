@@ -5,7 +5,8 @@ import { fetchTasks } from '../../features/tasks/taskSlice';
 import UpdateTaskModal from './UpdateTaskForm';
 import CustomCircularProgress from '../global/CustomCircularProgress';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'; // Make sure you've installed FontAwesome
-import { faSort } from '@fortawesome/free-solid-svg-icons';
+import { faSort, faEdit} from '@fortawesome/free-solid-svg-icons';
+
 
 const TaskListView = ({ onExport }) => {
   const dispatch = useDispatch();
@@ -53,23 +54,23 @@ const TaskListView = ({ onExport }) => {
   if (status === 'failed') return <div>Failed to load tasks.</div>;
 
   return (
-    <div className=" mx-auto p-4">
+    <div className=" mx-auto p-4 text-black">
       <div className="mb-4 bg-gray-50 flex justify-between items-center">
         <div className="flex gap-2 h-24 items-center">
           <input
             type="text"
             placeholder="Search tasks..."
-            className="input input-bordered w-full max-w-xs"
+            className="input border-l rounded-full w-full max-w-xs"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
           />
           <button 
-            className="btn btn-outline btn-primary border " 
+            className="btn btn-outline btn-primary border py-2 px-2 rounded-lg text-xs font-semibold" 
             onClick={() => handleDetailViewClick()}>
             DETAIL VIEW
           </button>
-          <button className="btn btn-outline btn-secondary border" onClick={onExport}>
-            Export issues
+          <button className="btn btn-outline btn-secondary border py-2 px-2 rounded-lg text-xs bg-custom-green text-white" onClick={onExport}>
+            Export Issues
           </button>
         </div>
         <div className="flex items-center gap-2">
@@ -111,8 +112,9 @@ const TaskListView = ({ onExport }) => {
                 <td className="py-4 px-6">
                   <button
                     onClick={() => openModal(task._id)}
-                    className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                    className="font-medium text-blue-600 bg-green-100 hover:bg-green-500 hover:text-white py-1 px-2 rounded-2xl text-xs dark:text-blue-500"
                   >
+                    <FontAwesomeIcon icon={faEdit} className='mr-2 text-yellow-400 hover:text-white hover:font-semibold' />
                     Update
                   </button>
                 </td>

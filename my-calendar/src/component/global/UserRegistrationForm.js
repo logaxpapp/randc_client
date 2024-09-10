@@ -52,7 +52,7 @@ const UserRegistrationForm = ({ tenantId, email, tenantName }) => {
       return (
         <div className="flex items-center justify-center min-h-screen bg-no-repeat bg-cover" style={{ backgroundImage: `url(${PartyImage})` }}>
           <div className="w-full max-w-2xl">
-            <div className="bg-white shadow-2xl rounded-lg px-10 py-10 m-4">
+            <div className="bg-yellow-50 shadow-2xl rounded-lg px-10 py-10 m-4">
               <h2 className="text-3xl font-extrabold mb-6 text-center text-gray-800">Create Account</h2>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-2 gap-6">

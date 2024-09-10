@@ -2,7 +2,7 @@ import { Router } from "express";
 import Project from "../mongoose/schemas/project.mjs";
 import { body, validationResult, param } from "express-validator";
 import User from "../mongoose/schemas/user.mjs";
-import { validateAndFindTenant } from "../component/utils/middleware.mjs";
+import { validateAndFindTenant, findProject } from "../component/utils/middleware.mjs";
 import roleCheckMiddleware from '../RBAC/roleCheckMiddleware.mjs';
 // Make sure to adjust the import path to where you actually have the middleware
 
@@ -19,23 +19,6 @@ const handleValidationErrors = (req, res, next) => {
   next();
 };
 
-const findProject = async (req, res, next) => {
-  try {
-    const project = await Project.findById(req.params.projectId);
-    if (!project) {
-      return res.status(404).json({ message: "Project not found" });
-    }
-    // Ensure the project belongs to the tenant
-    // Convert both IDs to strings for comparison
-    if (project.tenantId.toString() !== req.tenant._id.toString()) {
-      return res.status(403).json({ message: "Access forbidden" });
-    }
-    req.project = project;
-    next();
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
 
 
 // Validation rules for creating or updating a project

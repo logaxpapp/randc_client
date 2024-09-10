@@ -99,7 +99,7 @@ const ProjectDetailComponent = () => {
         </div>
       </div>
       {/* Modals */}
-      <ManageProjectModal open={isManageModalOpen} handleClose={handleCloseManageModal} project={project} />
+      <ManageProjectModal open={isManageModalOpen} handleClose={handleCloseManageModal} projectDetails={project} />
       <DeleteModal open={isDeleteModalOpen} onClose={handleCloseDeleteModal} onDelete={handleDeleteProject} title="Delete Project" message="Are you sure you want to delete this project? This action cannot be undone." />
     </div>
   );

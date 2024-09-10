@@ -32,7 +32,7 @@ const TenantRegistrationForm = ({ onTenantCreated }) => {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-no-repeat bg-cover" style={{ backgroundImage: `url(${PartyImage})` }}>
-      <div className="w-full max-w-2xl p-8 space-y-8 bg-white shadow-lg rounded-lg">
+      <div className="w-full max-w-2xl p-8 space-y-8 bg-yellow-50 shadow-lg rounded-lg">
         <h2 className="text-3xl font-bold text-center">Register Company</h2>
         <form onSubmit={handleSubmit} className="space-y-6 mb-20">
           <div>
