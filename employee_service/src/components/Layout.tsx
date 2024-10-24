@@ -11,15 +11,15 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   
-  // Check if the current path is under "/dashboard"
-  const isDashboardRoute = location.pathname.startsWith('/dashboard');
+  // Check if the current path is under "/dashboard" or "/login"
+  const isDashboardOrLoginRoute = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/login');
 
   return (
     <div>
-      {/* Only show the header and footer if the user is NOT on the dashboard */}
-      {!isDashboardRoute && <Header />}
+      {/* Only show the header and footer if the user is NOT on the dashboard or login page */}
+      {!isDashboardOrLoginRoute && <Header />}
       <main>{children}</main>
-      {!isDashboardRoute && <Footer />}
+      {!isDashboardOrLoginRoute && <Footer />}
     </div>
   );
 };
