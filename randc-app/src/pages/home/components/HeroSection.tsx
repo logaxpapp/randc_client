@@ -76,7 +76,7 @@ function HeroSection() {
         style={{ backgroundImage: `url(${bannerImage})` }}
       >
         {/* Dark overlay */}
-        <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-30 z-30" />
+        <div className="absolute top-0 left-0 w-full h-full bg-gray-500 opacity-5" />
 
         {/* Optional floating motion elements */}
         <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-40">
