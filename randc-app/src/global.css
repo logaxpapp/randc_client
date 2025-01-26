@@ -1,0 +1,79 @@
+
+/* src/index.css or globals.css */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Open+Sans:wght@400;500;600&display=swap');
+
+
+@import url('https://fonts.googleapis.com/css2?family=Jost:ital@0;1&display=swap');
+
+
+.moon-dance-regular {
+  font-family: "Moon Dance", serif;
+  font-weight: 400;
+  font-style: normal;
+  
+}
+
+.jost {
+  font-family: "Jost", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+p {
+  font-family: 'Jost', sans-serif;
+  font-size: 16px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Jost', sans-serif;
+}
+
+body {
+  font-family: 'Jost', sans-serif;
+}
+
+p {
+  font-family: 'moon-dance-regular', serif;
+}
+
+/* Responsive Styles */
+@media (max-width: 600px) {
+  h1 {
+    font-size: 2rem;
+  }
+}
+
+@media (min-width: 601px) {
+  h1 {
+    font-size: 3rem;
+  }
+}
+
+
+/* Tailwind Directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Bubble Float Animation */
+@keyframes bubbleFloat {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.animate-bubble-slow {
+  animation: bubbleFloat 4s ease-in-out infinite;
+}
+
+.animate-bubble-fast {
+  animation: bubbleFloat 2s ease-in-out infinite;
+}
+
