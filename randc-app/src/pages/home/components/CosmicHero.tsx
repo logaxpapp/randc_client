@@ -1,91 +1,90 @@
 import React from 'react';
 import CosmicHeroImg from '../../../assets/images/stock8.png';
+// Replace the path below with the actual import for your construction image
+import constructionHeroImg from "../../../assets/images/stock8.png";
+import { AiFillHome } from "react-icons/ai";
 
-interface CosmicHeroProps {
+interface ContactHeroProps {
   title?: string;
   subtitle?: string;
+  btnText?: string;
   imageSrc?: string;
 }
 
-const CosmicHero: React.FC<CosmicHeroProps> = ({
-  title = 'In an Infinite Universe, Choose Infinite Cleanliness',
-  subtitle = 'R&C Cleaning: Where Every Surface Glimmers Like the Cosmos',
-  imageSrc = CosmicHeroImg,
+const ContactHero: React.FC<ContactHeroProps> = ({
+  title = "Contact R&C and Let’s Build Together",
+  subtitle = "We’re here to help you with your next project. Get in touch with our team to discuss your ideas, goals, and how we can help you achieve them.",
+  btnText = "Contact Us →",
+  imageSrc = constructionHeroImg,
 }) => {
   return (
-    <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-gray-100">
-      {/* VITAL MESSAGE (sticky top) */}
-      <div className="sticky top-0 z-50 bg-pink-600 px-4 py-2 shadow-lg">
-        <p className="text-center text-white font-semibold">
-          In an Infinite Universe, Choose Infinite Cleanliness
-        </p>
+    <section className="relative w-full bg-[#101820] text-white overflow-hidden">
+      {/* Wave Shape Divider (Top) - optional */}
+      <div className="absolute top-0 w-full rotate-180 overflow-hidden leading-[0]">
+        <svg
+          className="block w-[200%] h-32 md:h-40 lg:h-56 ml-[-50%]"
+          viewBox="0 0 1440 320"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            fill="#101820"
+            fillOpacity="1"
+            d="M0,192L48,197.3C96,203,192,213,288,208C384,203,480,181,576,165.3C672,149,768,139,864,160C960,181,1056,235,1152,250.7C1248,267,1344,245,1392,234.7L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+          />
+        </svg>
       </div>
 
-      {/* HERO SECTION */}
-      <section className="relative w-full h-screen flex flex-col">
-        {/* 1) Animated Star Field (Background) */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className=" bg-cover bg-center w-full h-full " />
-        </div>
-
-        {/* 2) Hero Image with Glass Overlay */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <img
-            src={imageSrc}
-            alt="Cosmic Cup Hero"
-            className="w-full h-full object-cover object-center rounded-lg shadow-lg transform transition-transform hover:scale-105 hover:rotate-3"
-          />
-        </div>
-
-        <div className="absolute inset-0 backdrop-blur-sm bg-white/5" />
-
-        {/* 3) Wave Shape Divider at Bottom (Optional) */}
-        <div className="absolute bottom-0 w-full overflow-hidden leading-[0] rotate-180">
-          <svg
-            className="relative block w-[calc(100%+1.3px)] h-20"
-            viewBox="0 0 1200 120"
-            preserveAspectRatio="none"
-          >
-            <path
-              d="M985.66,26.29C895.56,56.06,805.48,85.64,709,95.87C606.21,107.31,506.31,99,402.45,76.36
-              C339.81,62.37,275.55,47.16,211.13,34.08C163.5,24.94,112.79,16.53,63.21,13.42C42.39,12.16,18.21,11.8,0,12.67V120H1200V7.73
-              C1125.74,23.88,1046.58,8.71,985.66,26.29Z"
-              fill="#ffffff"
-            />
-          </svg>
-        </div>
-
-        {/* 4) Hero Content */}
-        <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 text-center">
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold text-white mb-4 drop-shadow-lg">
+      {/* Main container */}
+      <div className="relative z-10 flex flex-col md:flex-row items-center max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-16 gap-8">
+        {/* Left Side: Text & Icon */}
+        <div className="flex-1 order-2 md:order-1">
+          {/* Small label with icon */}
+          <div className="flex items-center space-x-2 mb-4 text-amber-400 uppercase tracking-wider">
+            <AiFillHome className="text-xl" />
+            <span className="text-sm font-semibold">Contact Us</span>
+          </div>
+          <h1 className="text-3xl md:text-5xl font-bold mb-6 leading-tight">
             {title}
           </h1>
-          <p className="max-w-2xl text-lg md:text-xl lg:text-2xl text-slate-100 mb-8">
+          <p className="text-gray-300 text-base md:text-lg max-w-xl mb-8">
             {subtitle}
           </p>
           <button
-            className="bg-pink-600 hover:bg-pink-700 text-white text-base md:text-lg font-medium
-                       py-3 px-6 rounded-lg shadow-lg transition-transform transform
-                       hover:-translate-y-1 hover:scale-105"
+            className="inline-block bg-amber-400 hover:bg-amber-500 text-gray-800 font-semibold text-sm md:text-base py-3 px-6 rounded-md shadow-md transition-transform transform hover:-translate-y-0.5 hover:scale-105"
           >
-            Launch into Cleanliness
+            {btnText}
           </button>
         </div>
-      </section>
 
-      {/* OPTIONAL INFO / CTA SECTION */}
-      <div className="relative bg-white text-gray-800 py-16 px-4 md:px-8 text-center">
-        <h2 className="text-2xl md:text-3xl font-bold mb-4">
-          Enter a New Dimension of Clean
-        </h2>
-        <p className="max-w-3xl mx-auto leading-relaxed">
-          Experience stellar results with R&C Cleaning—where every speck of dust
-          is lost to the cosmic abyss. Let us make your business space feel like
-          a refreshing galactic breeze. Join our orbit of satisfied clients today!
-        </p>
+        {/* Right Side: Image */}
+        <div className="flex-1 order-1 md:order-2 w-full h-auto">
+          <img
+            src={imageSrc}
+            alt="Contact Hero"
+            className="w-full h-auto object-cover rounded-md shadow-lg"
+          />
+        </div>
       </div>
-    </div>
+
+      {/* Wave Shape Divider (Bottom) */}
+      <div className="absolute bottom-0 w-full overflow-hidden leading-[0]">
+        <svg
+          className="block w-full h-20 md:h-32 lg:h-48"
+          viewBox="0 0 1440 320"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            fill="#fff"
+            fillOpacity="1"
+            d="M0,192L48,197.3C96,203,192,213,288,208C384,203,480,181,576,165.3C672,149,768,139,864,160C960,181,1056,235,1152,250.7C1248,267,1344,245,1392,234.7L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+          />
+        </svg>
+      </div>
+    </section>
   );
 };
 
-export default CosmicHero;
+export default ContactHero;
+

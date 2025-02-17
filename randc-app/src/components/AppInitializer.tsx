@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '../app/hooks';
 import { initSocket, getSocket, disconnectSocket } from '../services/socketService';
 
-import { setCSRFToken } from '../features/api/baseQuery';
+
 import {
   addMessage,
   editMessage,
@@ -53,29 +53,12 @@ interface PresencePayload {
   status: string;
 }
 
-/**
- * Fetch the CSRF token from the server and store it in baseQuery.
- */
-async function fetchAndStoreCSRFToken() {
-  const res = await fetch('http://localhost:4000/api/auth/csrf-token', {
-    credentials: 'include',
-  });
-  const data = await res.json();
-  if (data.csrfToken) {
-    setCSRFToken(data.csrfToken);
-  }
-}
 
 export default function AppInitializer() {
   const dispatch = useAppDispatch();
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);
 
-  // 1) Fetch CSRF token on mount
-  useEffect(() => {
-    fetchAndStoreCSRFToken().catch((err) =>
-      console.error('Failed to fetch CSRF token', err)
-    );
-  }, []);
+  
 
   // 2) Setup Socket.IO if authenticated
   useEffect(() => {

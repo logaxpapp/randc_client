@@ -10,14 +10,29 @@ export const tenantApi = createApi({
   tagTypes: ['Tenant'], // Added tagTypes
   endpoints: (builder) => ({
     // 1) Create Tenant (POST /tenants)
-    createTenant: builder.mutation<any, { name: string; domain?: string; aboutUs?: string }>({
-      query: (body) => ({
-        url: '/tenants',
-        method: 'POST',
-        body,
+    createTenant: builder.mutation<
+        any, 
+        { 
+          name: string; 
+          domain?: string; 
+          aboutUs?: string; 
+          address: {
+            street: string;
+            city: string;
+            state: string;
+            postalCode: string;
+            country: string;
+          };
+        }
+      >({
+        query: (body) => ({
+          url: '/tenants',
+          method: 'POST',
+          body,
+        }),
+        invalidatesTags: ['Tenant'],
       }),
-      invalidatesTags: ['Tenant'], // Invalidate 'Tenant' tag to refetch tenant lists
-    }),
+  
 
     // 2) List all tenants (GET /tenants)
     listTenants: builder.query<Tenant[], void>({

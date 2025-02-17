@@ -56,6 +56,55 @@ export interface Booking {
   customer: CustomerObject; // object, not string
   price?: number;
 
+
   createdAt?: string;
   updatedAt?: string;
 }
+
+// Some simplified types
+export interface SpecialRequests {
+  hasPets?: boolean;
+  numberOfRooms?: number;
+  note?: string;
+  address?: string;
+  roomType?: string;
+}
+
+
+
+export interface BookingResponse {
+  success: boolean;
+  data: Booking;
+  message?: string;
+}
+
+export interface BookingListResponse {
+  success: boolean;
+  data: Booking[];
+}
+
+// -------------------------------------------------------------------
+//    BOOKING FLOW STATE
+// -------------------------------------------------------------------
+export interface BookingFlowState {
+  step: number;
+  serviceId: string;
+  selectedDate: Date | null;
+  selectedSlot: {
+    _id: string;
+    startTime: string;
+    endTime: string;
+    isBooked: boolean;
+    bookedCount: number;
+    maxCapacity: number;
+    tenant: string;
+  } | null;
+specialRequests: SpecialRequests;
+payNow: boolean;
+guestEmail?: string;
+firstName?: string;
+lastName?: string;
+email?: string;
+password?: string;
+}
+

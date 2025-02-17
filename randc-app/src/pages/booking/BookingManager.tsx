@@ -1,4 +1,5 @@
 // src/pages/booking/BookingManager.tsx
+
 import React, { useState, useMemo, useEffect } from 'react';
 import {
   useListBookingsQuery,
@@ -85,7 +86,6 @@ function StatusBadge({ status }: { status?: string }) {
   );
 }
 
-
 async function handleCreateCustomerForm(values: CustomerFormValues, createCustomer: any) {
   const payload: CustomerPayload = {
     _id: values._id || '',
@@ -104,7 +104,7 @@ const BookingManager: React.FC = () => {
   const { data: timeSlots = [], refetch: refetchTimeSlots } = useGetAllTimeSlotsQuery();
   const { data: customers = [] } = useListCustomersQuery();
   const { data: services = [] } = useListServicesQuery();
-  const { data: staffList = [], isLoading: isUsersLoading } = useListTenantUsersQuery();
+  const { data: staffList = [] } = useListTenantUsersQuery();
 
   // 2) Mutations
   const [createTenantBooking, { isLoading: isCreatingBooking }] = useCreateTenantBookingMutation();
@@ -302,114 +302,156 @@ const BookingManager: React.FC = () => {
     },
   ];
 
-  // 7) Render
   return (
-    <div className="p-4 space-y-4">
-      <div className="bg-white shadow rounded p-4 space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-xl font-bold text-gray-800">Booking Manager</h1>
-          <p className="text-sm text-gray-500">
-            Create, view, and manage all bookings. Completing a booking automatically creates a receipt.
-          </p>
-        </div>
+    <section className="relative w-full min-h-screen overflow-hidden text-gray-800">
 
-        {/* Buttons Row */}
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setCreateDialogOpen(true)}
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-          >
-            <CalendarDaysIcon className="w-5 h-5 mr-2" />
-            New Booking
-          </button>
+    <div className="sticky top-0 z-50 bg-yellow-200 text-yellow-800 p-3 font-semibold shadow-md">
+        <strong>Vital Message:</strong> Manage your Bookings  carefully!
+      </div>
 
-          <button
-            onClick={() => setIsGenerateDialogOpen(true)}
-            className="inline-flex items-center px-4 py-2 border border-blue-600 text-blue-600 rounded hover:bg-blue-50 transition"
-          >
-            <CalendarDaysIcon className="w-5 h-5 mr-2" />
-            Generate Time Slots
-          </button>
+      <div className="absolute top-0 left-0 w-full rotate-180 leading-none z-0">
+        <svg
+          className="block w-full h-20 md:h-32 lg:h-48"
+          viewBox="0 0 1440 320"
+          preserveAspectRatio="none"
+        >
+          <path
+            fill="#3b82f6"
+            fillOpacity="1"
+            d="M0,224L48,224C96,224,192,224,288,197.3C384,171,480,117,576,96C672,75,768,85,864,112C960,139,1056,181,1152,170.7C1248,160,1344,96,1392,64L1440,32L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+          />
+        </svg>
+      </div>
 
-          <button
-            onClick={() => setIsCustomerDialogOpen(true)}
-            className="inline-flex items-center px-4 py-2 border border-green-600 text-green-600 rounded hover:bg-green-50 transition"
-          >
-            <UserPlusIcon className="w-5 h-5 mr-2" />
-            Quick Create Customer
-          </button>
+      {/* Background Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-blue-200 via-white to-lime-100 z-0" />
 
-          {/* Toggle ReceiptManager */}
-          <button
-            onClick={() => setShowReceiptManager((prev) => !prev)}
-            className="inline-flex items-center px-4 py-2 border border-green-600 text-green-600 rounded hover:bg-green-50 transition"
-          >
-            {showReceiptManager ? 'Hide' : 'Show'} Receipt Manager
-          </button>
-        </div>
+    
 
-        {/* If not showing receipts => show booking table */}
-        {!showReceiptManager && (
-          <>
-            <div className="relative">
-              <MagnifyingGlassIcon className="absolute left-2 top-2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search bookings..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 pr-4 py-2 w-full border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div className="border rounded overflow-auto max-h-[60vh]">
-              {isBookingsLoading ? (
-                <div className="p-4 text-center text-gray-500">Loading bookings...</div>
-              ) : filteredBookings.length === 0 ? (
-                <div className="p-4 text-center text-gray-500">No bookings found.</div>
-              ) : (
-                <table className="w-full text-sm text-gray-700 border-collapse">
-                  <thead className="sticky top-0 bg-gray-100 border-b text-xs uppercase text-gray-600">
-                    <tr>
-                      {columns.map((col) => (
-                        <th key={col.field} className="py-3 px-4 font-semibold text-left">
-                          {col.headerName}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {filteredBookings.map((row, rowIndex) => (
-                      <tr
-                        key={row._id}
-                        className={`hover:bg-gray-50 ${rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'} transition-colors`}
-                      >
-                        {columns.map((col) => {
-                          const cellContent = col.renderCell
-                            ? col.renderCell(row)
-                            : safeDisplay(row[col.field as keyof typeof row]);
-                          return (
-                            <td key={col.field} className="py-3 px-4 align-middle">
-                              {cellContent}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          </>
-        )}
-
-        {/* If showReceiptManager => display <ReceiptManager /> */}
-        {showReceiptManager && (
-          <div className="border rounded p-4 bg-gray-50">
-            <ReceiptManager />
+      {/* Main Content */}
+      <div className="relative z-10 p-4 space-y-4 min-h-screen">
+        <div className="bg-white shadow rounded p-4 space-y-6">
+          {/* Header */}
+          <div>
+            <h1 className="text-xl font-bold text-gray-800">Booking Manager</h1>
+            <p className="text-sm text-gray-500">
+              Create, view, and manage all bookings. Completing a booking automatically creates a receipt.
+            </p>
           </div>
-        )}
+
+          {/* Buttons Row */}
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setCreateDialogOpen(true)}
+              className="inline-flex items-center px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 transition"
+            >
+              <CalendarDaysIcon className="w-5 h-5 mr-2" />
+              New Booking
+            </button>
+
+            <button
+              onClick={() => setIsGenerateDialogOpen(true)}
+              className="inline-flex items-center px-4 py-2 border border-teal-600 text-teal-600 rounded hover:bg-teal-50 transition"
+            >
+              <CalendarDaysIcon className="w-5 h-5 mr-2" />
+              Generate Time Slots
+            </button>
+
+            <button
+              onClick={() => setIsCustomerDialogOpen(true)}
+              className="inline-flex items-center px-4 py-2 border border-green-600 text-green-600 rounded hover:bg-green-50 transition"
+            >
+              <UserPlusIcon className="w-5 h-5 mr-2" />
+              Quick Create Customer
+            </button>
+
+            {/* Toggle ReceiptManager */}
+            <button
+              onClick={() => setShowReceiptManager((prev) => !prev)}
+              className="inline-flex items-center px-4 py-2 border border-green-600 text-green-600 rounded hover:bg-green-50 transition"
+            >
+              {showReceiptManager ? 'Hide' : 'Show'} Receipt Manager
+            </button>
+          </div>
+
+          {/* If not showing receipts => show booking table */}
+          {!showReceiptManager && (
+            <>
+              <div className="relative">
+                <MagnifyingGlassIcon className="absolute left-2 top-2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search bookings..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9 pr-4 py-2 w-full border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="border rounded overflow-auto max-h-[60vh]">
+                {isBookingsLoading ? (
+                  <div className="p-4 text-center text-gray-500">Loading bookings...</div>
+                ) : filteredBookings.length === 0 ? (
+                  <div className="p-4 text-center text-gray-500">No bookings found.</div>
+                ) : (
+                  <table className="w-full text-sm text-gray-700 border-collapse">
+                    <thead className="sticky top-0 bg-gray-100 border-b text-xs uppercase text-gray-600">
+                      <tr>
+                        {columns.map((col) => (
+                          <th key={col.field} className="py-3 px-4 font-semibold text-left">
+                            {col.headerName}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {filteredBookings.map((row, rowIndex) => (
+                        <tr
+                          key={row._id}
+                          className={`hover:bg-gray-50 ${
+                            rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                          } transition-colors`}
+                        >
+                          {columns.map((col) => {
+                            const cellContent = col.renderCell
+                              ? col.renderCell(row)
+                              : safeDisplay(row[col.field as keyof typeof row]);
+                            return (
+                              <td key={col.field} className="py-3 px-4 align-middle">
+                                {cellContent}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* If showReceiptManager => display <ReceiptManager /> */}
+          {showReceiptManager && (
+            <div className="border rounded p-4 bg-gray-50">
+              <ReceiptManager />
+            </div>
+          )}
+        </div>
+      </div>
+      {/* --- Bottom Wave Divider --- */}
+      <div className="absolute bottom-0 w-full leading-none z-0">
+        <svg
+          className="block w-full h-20 md:h-32 lg:h-48"
+          viewBox="0 0 1440 320"
+          preserveAspectRatio="none"
+        >
+          <path
+            fill="#3b82f6"
+            fillOpacity="1"
+            d="M0,64L48,64C96,64,192,64,288,101.3C384,139,480,213,576,224C672,235,768,181,864,165.3C960,149,1056,171,1152,186.7C1248,203,1344,213,1392,218.7L1440,224L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"
+          />
+        </svg>
       </div>
 
       {/* Dialogs */}
@@ -470,7 +512,7 @@ const BookingManager: React.FC = () => {
           </button>
         </div>
       )}
-    </div>
+    </section>
   );
 };
 

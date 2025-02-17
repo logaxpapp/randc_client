@@ -14,6 +14,14 @@ export interface TimeSlotPayload {
   createdAt?: string;
 }
 
+// Optional query params for filtering time slots
+export interface GetAllSlotsArgs {
+  from?: string; // e.g. "2023-10-01"
+  to?: string;   // e.g. "2023-10-31"
+  day?: string;  // e.g. "Monday"
+}
+
+
 // For bulk generation with start/end dates
 export interface GenerateSlotsBody {
   slotDuration: number;
@@ -47,20 +55,40 @@ export const timeSlotApi = createApi({
       invalidatesTags: [{ type: 'TimeSlot', id: 'LIST' }],
     }),
 
-    // GET all slots
-    getAllTimeSlots: builder.query<TimeSlotPayload[], void>({
-      query: () => `/timeslots`,
-      transformResponse: (response: { success: boolean; data: TimeSlotPayload[] }) => {
-        return response.data;
-      },
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.map((slot) => ({ type: 'TimeSlot' as const, id: slot._id })),
-              { type: 'TimeSlot', id: 'LIST' },
-            ]
-          : [{ type: 'TimeSlot', id: 'LIST' }],
+   // GET all time slots (with optional filters: from, to, day)
+   getAllTimeSlots: builder.query<TimeSlotPayload[], GetAllSlotsArgs | void>({
+    query: (args) => {
+      // Build query string from optional args
+      const params = new URLSearchParams();
+      if (args?.from) params.set('from', args.from);
+      if (args?.to)   params.set('to',   args.to);
+      if (args?.day)  params.set('day',  args.day);
+
+      // e.g. GET /timeslots?from=2023-10-01&to=2023-10-31&day=Monday
+      const url = `/timeslots?${params.toString()}`;
+      return url;
+    },
+    transformResponse: (resp: { success: boolean; data: TimeSlotPayload[] }) => resp.data,
+    providesTags: (result) =>
+      result
+        ? [
+            ...result.map((slot) => ({ type: 'TimeSlot' as const, id: slot._id })),
+            { type: 'TimeSlot', id: 'LIST' },
+          ]
+        : [{ type: 'TimeSlot', id: 'LIST' }],
+  }),
+    getServiceSlotsByDate: builder.query<TimeSlotPayload[], { serviceId: string; date: string }>({
+      query: ({ serviceId, date }) => `/services/${serviceId}/timeSlots?date=${date}`,
+      transformResponse: (resp: { success: boolean; data: TimeSlotPayload[] }) => resp.data,
     }),
+
+  // GET single time slot by ID
+  getTimeSlotById: builder.query<TimeSlotPayload, string>({
+    query: (slotId) => `/timeslots/${slotId}`,
+    transformResponse: (resp: { success: boolean; data: TimeSlotPayload }) => resp.data,
+    providesTags: (result) =>
+      result ? [{ type: 'TimeSlot', id: result._id }] : [],
+  }),
 
     // Update
     updateTimeSlot: builder.mutation<any, { slotId: string; body: Partial<TimeSlotPayload> }>({
@@ -161,4 +189,5 @@ export const {
   useBlockSlotMutation,
   useUnblockSlotMutation,
   useUpdateSlotCapacityMutation,
+  useGetServiceSlotsByDateQuery
 } = timeSlotApi;

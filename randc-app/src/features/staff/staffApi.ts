@@ -36,6 +36,26 @@ export const staffApi = createApi({
       // Provide the same tag that is invalidated by `createStaffWithUser`
       providesTags: [{ type: 'Staff', id: 'LIST' }],
     }),
+
+    adminListAllStaff: builder.query<StaffTransformed[], void>({
+      query: () => '/staff/admin-staff-all', // the route from your Node backend
+      transformResponse: (resp: { success: boolean; data: any[] }) => {
+        return resp.data.map(item => ({
+          ...item,
+          firstName: item.userId?.firstName,
+          lastName: item.userId?.lastName,
+          role: item.localRole,
+        }));
+      },
+      providesTags: (result) =>
+        result
+          ? [
+              // We can provide a general "ALL_STAFF" tag
+              { type: 'Staff' as const, id: 'ALL_STAFF' },
+              ...result.map(staff => ({ type: 'Staff' as const, id: staff._id })),
+            ]
+          : [{ type: 'Staff', id: 'ALL_STAFF' }],
+    }),
     // GET staff by ID
     getStaffById: builder.query<StaffPayload, string>({
       query: (staffId) => `/staff/${staffId}`,
@@ -211,4 +231,5 @@ export const {
   useAdminUpdateStaffMutation,
   useAdminDeleteStaffMutation,
   useAdminPatchStaffUserMutation,
+  useAdminListAllStaffQuery,
 } = staffApi;

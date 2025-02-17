@@ -1,106 +1,109 @@
-// src/pages/home/components/FeaturesSection.tsx
+import React from "react";
+import { motion } from "framer-motion";
+import { FaHandsWash, FaRegSmile, FaGlobe, FaLifeRing, FaRocket, FaChartLine } from "react-icons/fa";
 
-import React from 'react';
-import { motion } from 'framer-motion';
+const featuresData = [
+  {
+    icon: <FaHandsWash />,
+    title: "Cutting-Edge Cleaning Tools",
+    description: "Access specialized solutions for smarter cleaning.",
+  },
+  {
+    icon: <FaRegSmile />,
+    title: "Boost Customer Confidence",
+    description: "Build trust with reviews and custom profiles.",
+  },
+  {
+    icon: <FaGlobe />,
+    title: "Expand Your Reach",
+    description: "Grow locally or globally with built-in marketing.",
+  },
+  {
+    icon: <FaLifeRing />,
+    title: "24/7 Support",
+    description: "Get assistance whenever you need it.",
+  },
+  {
+    icon: <FaRocket />,
+    title: "Growth Insights",
+    description: "Use analytics to optimize your services and pricing.",
+  },
+  {
+    icon: <FaChartLine />,
+    title: "Seamless Payments",
+    description: "Get paid instantly with secure payment gateways.",
+  },
+];
 
-function FeaturesSection() {
-  const features = [
-    {
-      icon: 'fas fa-bullhorn',
-      title: 'Market Your Services',
-      description:
-        'Showcase your specialties and get discovered by a broader audience searching for top-rated cleaners.',
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      duration: 0.8,
+      staggerChildren: 0.2,
     },
-    {
-      icon: 'fas fa-calendar-check',
-      title: 'Smart Scheduling',
-      description:
-        'Enjoy flexible booking tools that help you set availability and let clients reserve spots effortlessly.',
-    },
-    {
-      icon: 'fas fa-home',
-      title: 'Personalized Listings',
-      description:
-        'Create a dedicated profile detailing your expertise, photos of past work, pricing, and more.',
-    },
-    {
-      icon: 'fas fa-shield-alt',
-      title: 'Secure Transactions',
-      description:
-        'Count on safe, seamless payments and built-in protections, reassuring both cleaners and clients.',
-    },
-    {
-      icon: 'fas fa-thumbs-up',
-      title: 'Ratings & Feedback',
-      description:
-        'Gain client trust through genuine reviews, helping seekers find the perfect match for their needs.',
-    },
-    {
-      icon: 'fas fa-user-friends',
-      title: '24/7 Support',
-      description:
-        'Our dedicated team is always available, ensuring any questions or issues get resolved promptly.',
-    },
-  ];
+  },
+};
 
+const itemVariants = {
+  hidden: { opacity: 0, y: 50, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.6,
+      ease: "easeOut",
+    },
+  },
+};
+
+const FeaturesSection: React.FC = () => {
   return (
-    <section className="relative overflow-hidden">
-      {/* TILTED/ANGLED BACKGROUND - using a pseudo element or an absolute div */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[#918BFF] via-blue-100 to-yello transform rotate-3 origin-top-left" />
+    <section className="py-12 bg-gradient-to-b from-white via-gray-50 to-gray-200 overflow-hidden relative"> 
+      
 
-      {/* Actual content container */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-16">
-        {/* Heading + subheading row */}
-        <div className="text-center mb-12">
-          <motion.h2
-            className="text-4xl sm:text-5xl font-extrabold text-[#D63063]"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-          >
-            Empowering Cleaners & Clients
-          </motion.h2>
-          <motion.p
-            className="mt-4 text-lg max-w-2xl mx-auto text-gray-700"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.1 }}
-            viewport={{ once: true }}
-          >
-            Our platform provides powerful tools and a supportive environment for professional 
-            cleaners to grow their business—and for clients to easily find, book, and review 
-            services that meet their highest standards.
-          </motion.p>
-        </div>
+      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 lg:px-20">
+        <motion.div
+          className="text-center mb-8"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          <h2 className="text-5xl font-bold text-gray-800 mb-2 leading-tight">
+            Power Up Your Cleaning Business
+          </h2>
+          <p className="text-xl text-gray-600 leading-relaxed max-w-3xl mx-auto">
+            Our platform equips you with the tools you need to succeed.
+          </p>
+        </motion.div>
 
-        {/* Feature cards row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {features.map((feat, idx) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+          {featuresData.map((feat, idx) => (
             <motion.div
               key={idx}
-              className="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center text-center hover:shadow-2xl transition transform hover:-translate-y-1"
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: idx * 0.1 }}
-              viewport={{ once: true }}
+              className="bg-white rounded-3xl shadow-lg p-10 hover:shadow-xl transition duration-300 ease-in-out relative overflow-hidden group" // Added group class
+              variants={itemVariants}
             >
-              {/* Icon or image */}
-              <div className="mb-4 text-green-600 text-4xl">
-                <i className={feat.icon}></i>
+              <div className="text-yellow-500 text-6xl mb-8 flex items-center justify-center transition duration-300 group-hover:scale-110"> {/* Scaled on hover */}
+                {feat.icon}
               </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">
+              <h3 className="text-2xl font-semibold text-gray-800 mb-6 text-center transition duration-300 group-hover:text-yellow-500"> {/* Title color change on hover */}
                 {feat.title}
               </h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 leading-relaxed text-center transition duration-300 group-hover:text-gray-800"> {/* Description color change on hover */}
                 {feat.description}
               </p>
+              {/* Subtle Gradient Overlay on Hover - Now more visible */}
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-900/20 opacity-0 group-hover:opacity-100 transition duration-300 pointer-events-none rounded-3xl"></div> {/* Rounded corners for gradient */}
             </motion.div>
           ))}
         </div>
       </div>
     </section>
   );
-}
+};
 
 export default FeaturesSection;

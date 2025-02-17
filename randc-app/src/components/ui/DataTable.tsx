@@ -10,6 +10,7 @@ export interface Column<T> {
   accessor: keyof T;
   sortable?: boolean;
   render?: (row: T) => React.ReactNode;
+  width?: number; // Width of each column in pixels
 }
 
 interface DataTableProps<T> {
@@ -17,6 +18,8 @@ interface DataTableProps<T> {
   data: T[];
   rowHeight?: number; // Height of each row in pixels
   height?: number;    // Height of the table in pixels
+  width?: number;    // Width of the table in pixels
+  
 }
 
 function DataTable<T extends { [key: string]: any }>({

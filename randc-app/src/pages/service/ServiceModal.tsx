@@ -1,10 +1,14 @@
 // src/pages/services/ServiceModal.tsx
-import React, { useState, useEffect, ChangeEvent } from 'react';
-import { FaTimes, FaUpload, FaTrash } from 'react-icons/fa';
-import Button from '../../components/ui/Button';
-import { uploadMultipleImages } from '../../util/cloudinary';
-import Toast from '../../components/ui/Toast';
-import { useListCategoriesQuery, CategoryPayload } from '../../features/category/categoryApi';
+
+import React, { useState, useEffect, ChangeEvent } from "react";
+import { FaTimes, FaUpload, FaTrash } from "react-icons/fa";
+import Button from "../../components/ui/Button";
+import { uploadMultipleImages } from "../../util/cloudinary";
+import Toast from "../../components/ui/Toast";
+import {
+  useListCategoriesQuery,
+  CategoryPayload,
+} from "../../features/category/categoryApi";
 
 interface ServiceFormData {
   _id?: string;
@@ -13,10 +17,8 @@ interface ServiceFormData {
   price: number;
   duration: number;
   images: string[];
-  
-  // new fields
-  category?: string;             // main category ID
-  subcategories?: string[];      // array of subcategory IDs
+  category?: string;         // main category ID
+  subcategories?: string[];  // array of subcategory IDs
 }
 
 interface ServiceModalProps {
@@ -32,35 +34,56 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
   onClose,
   onSave,
 }) => {
+  // ============= Local Form State =============
   const [form, setForm] = useState<ServiceFormData>({
-    name: '',
-    description: '',
+    name: "",
+    description: "",
     price: 0,
     duration: 0,
     images: [],
-    category: '',
+    category: "",
     subcategories: [],
   });
+
+  // Track selected image files before upload
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ show: boolean; message: string }>({ show: false, message: '' });
 
-  // Fetch all categories
-  const { data: categories, isLoading: categoriesLoading } = useListCategoriesQuery();
+  // Toast Notification
+  const [toast, setToast] = useState<{ show: boolean; message: string }>({
+    show: false,
+    message: "",
+  });
 
-  // Populate form when opening or initialData changes
+  // ============= Category Pagination & Search =============
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Use RTK Query to fetch paginated categories
+  const {
+    data: catData,
+    isLoading: categoriesLoading,
+    isError: categoriesError,
+    refetch,
+  } = useListCategoriesQuery({ page, limit, search: searchTerm });
+
+  // Extract the actual categories array from the paginated response
+  const categories: CategoryPayload[] = catData?.data || [];
+
+  // ============= Lifecycle: Reset Form on Open or initialData Change =============
   useEffect(() => {
     if (initialData) {
       setForm({ ...initialData });
     } else {
       setForm({
-        name: '',
-        description: '',
+        name: "",
+        description: "",
         price: 0,
         duration: 0,
         images: [],
-        category: '',
+        category: "",
         subcategories: [],
       });
     }
@@ -69,31 +92,40 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
     setError(null);
   }, [initialData, isOpen]);
 
+  // If modal not open, don't render anything
   if (!isOpen) return null;
 
+  // ============= Handlers =============
+
+  // Select new images
   const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const files = Array.from(e.target.files);
 
-    // Limit to 3 new images total (existing + new)
+    // Limit total images to 3 (existing + newly selected)
     const totalImagesCount = form.images.length + files.length;
     if (totalImagesCount > 3) {
-      setToast({ show: true, message: 'You can upload a maximum of 3 images total.' });
+      setToast({
+        show: true,
+        message: "You can upload a maximum of 3 images total.",
+      });
       return;
     }
     setSelectedFiles(files);
   };
 
+  // Generic form field change
   const handleChange = (key: keyof ServiceFormData, value: any) => {
     setForm((prev) => {
-      if (key === 'duration' || key === 'price') {
-        value = Number(value);
-        if (isNaN(value)) value = 0;
+      if (key === "price" || key === "duration") {
+        const numeric = Number(value);
+        value = isNaN(numeric) ? 0 : numeric;
       }
       return { ...prev, [key]: value };
     });
   };
 
+  // Remove an existing image from the form's images array
   const handleRemoveImage = (index: number) => {
     setForm((prev) => {
       const newImages = [...prev.images];
@@ -102,6 +134,7 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
     });
   };
 
+  // Remove a selected file that hasn't been uploaded yet
   const handleRemoveSelectedFile = (index: number) => {
     setSelectedFiles((prev) => {
       const newFiles = [...prev];
@@ -110,23 +143,25 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
     });
   };
 
+  // Toggle subcategory IDs in the form
   const handleSubcategoryToggle = (subcatId: string) => {
     setForm((prev) => {
       const existing = new Set(prev.subcategories);
       if (existing.has(subcatId)) {
-        // Remove
         existing.delete(subcatId);
       } else {
-        // Add
         existing.add(subcatId);
       }
       return { ...prev, subcategories: Array.from(existing) };
     });
   };
 
-  // This function helps us find the selected main category object
-  const selectedCategoryObj = categories?.find((cat) => cat._id === form.category);
+  // Find the currently selected main category object
+  const selectedCategoryObj = categories.find(
+    (cat: CategoryPayload) => cat._id === form.category
+  );
 
+  // Submit the form data to the parent onSave callback
   const handleSubmit = async () => {
     try {
       setIsUploading(true);
@@ -134,42 +169,48 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
 
       // Basic validations
       if (!form.name.trim()) {
-        setError('Service name is required.');
+        setError("Service name is required.");
         setIsUploading(false);
         return;
       }
       if (!form.price || form.price <= 0) {
-        setError('Price must be a positive number.');
+        setError("Price must be a positive number.");
         setIsUploading(false);
         return;
       }
       if (!form.duration || form.duration <= 0) {
-        setError('Duration must be a positive number.');
+        setError("Duration must be a positive number.");
         setIsUploading(false);
         return;
       }
 
-      // Upload selected images
+      // Upload new images if selected
       let newUrls: string[] = [];
       if (selectedFiles.length > 0) {
-        newUrls = await uploadMultipleImages(selectedFiles, { folder: 'services' });
+        newUrls = await uploadMultipleImages(selectedFiles, {
+          folder: "services",
+        });
       }
 
+      // Merge existing + newly uploaded images
       const updatedForm = {
         ...form,
         images: [...form.images, ...newUrls],
       };
 
+      // Save via callback
       await onSave(updatedForm);
-      setToast({ show: true, message: 'Service saved successfully!' });
+
+      setToast({ show: true, message: "Service saved successfully!" });
     } catch (err: any) {
-      console.error('Image upload error:', err);
-      setError(err.message || 'Failed to upload images');
+      console.error("Image upload error:", err);
+      setError(err.message || "Failed to upload images");
     } finally {
       setIsUploading(false);
     }
   };
 
+  // ============= Render =============
   return (
     <>
       {/* Modal Backdrop */}
@@ -184,8 +225,9 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
             <FaTimes size={20} />
           </button>
 
+          {/* Modal Title */}
           <h2 className="text-2xl font-bold mb-6 text-center">
-            {form._id ? 'Edit Service' : 'Create Service'}
+            {form._id ? "Edit Service" : "Create Service"}
           </h2>
 
           {/* Error Message */}
@@ -194,10 +236,11 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
               {error}
             </div>
           )}
-
           {/* Loading Categories */}
           {categoriesLoading && (
-            <div className="text-sm text-gray-500 mb-2">Loading categories...</div>
+            <div className="text-sm text-gray-500 mb-2">
+              Loading categories...
+            </div>
           )}
 
           {/* Form */}
@@ -210,7 +253,7 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
               <input
                 type="text"
                 value={form.name}
-                onChange={(e) => handleChange('name', e.target.value)}
+                onChange={(e) => handleChange("name", e.target.value)}
                 className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Service name"
                 required
@@ -225,7 +268,7 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
               <textarea
                 rows={3}
                 value={form.description}
-                onChange={(e) => handleChange('description', e.target.value)}
+                onChange={(e) => handleChange("description", e.target.value)}
                 className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Short description"
               />
@@ -236,12 +279,12 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
               {/* Price */}
               <div>
                 <label className="block text-sm font-semibold mb-1">
-                  Price ($) <span className="text-red-500">*</span>
+                  Price <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
                   value={form.price}
-                  onChange={(e) => handleChange('price', e.target.value)}
+                  onChange={(e) => handleChange("price", e.target.value)}
                   className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="0"
                   min="0"
@@ -257,7 +300,7 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
                 <input
                   type="number"
                   value={form.duration}
-                  onChange={(e) => handleChange('duration', e.target.value)}
+                  onChange={(e) => handleChange("duration", e.target.value)}
                   className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="30"
                   min="1"
@@ -268,14 +311,16 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
 
             {/* Main Category */}
             <div>
-              <label className="block text-sm font-semibold mb-1">Main Category</label>
+              <label className="block text-sm font-semibold mb-1">
+                Main Category
+              </label>
               <select
-                value={form.category || ''}
-                onChange={(e) => handleChange('category', e.target.value)}
+                value={form.category || ""}
+                onChange={(e) => handleChange("category", e.target.value)}
                 className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">-- Select Category --</option>
-                {categories?.map((cat) => (
+                {categories.map((cat: CategoryPayload) => (
                   <option key={cat._id} value={cat._id}>
                     {cat.name}
                   </option>
@@ -283,12 +328,14 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
               </select>
             </div>
 
-            {/* Subcategories (only show if the user selected a main category) */}
-            {selectedCategoryObj && selectedCategoryObj.children && selectedCategoryObj.children.length > 0 && (
+            {/* Subcategories (if the selected category has children) */}
+            {selectedCategoryObj?.children && selectedCategoryObj.children.length > 0 && (
               <div>
-                <label className="block text-sm font-semibold mb-1">Subcategories</label>
+                <label className="block text-sm font-semibold mb-1">
+                  Subcategories
+                </label>
                 <div className="flex flex-wrap gap-2">
-                  {selectedCategoryObj.children.map((child) => {
+                  {selectedCategoryObj.children.map((child: CategoryPayload) => {
                     const isChecked = form.subcategories?.includes(child._id);
                     return (
                       <label
@@ -336,7 +383,7 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
               </div>
             )}
 
-            {/* File Upload */}
+            {/* File Upload for New Images */}
             <div>
               <label className="block text-sm font-semibold mb-1">
                 Upload Images
@@ -381,7 +428,7 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
                 Cancel
               </Button>
               <Button variant="primary" onClick={handleSubmit} loading={isUploading}>
-                {isUploading ? 'Saving...' : 'Save'}
+                {isUploading ? "Saving..." : "Save"}
               </Button>
             </div>
           </form>
@@ -392,7 +439,7 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
       <Toast
         show={toast.show}
         message={toast.message}
-        onClose={() => setToast({ show: false, message: '' })}
+        onClose={() => setToast({ show: false, message: "" })}
       />
     </>
   );

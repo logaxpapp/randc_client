@@ -1,4 +1,5 @@
 // src/features/auth/authApi.ts
+
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { customBaseQuery } from '../api/baseQuery';
 
@@ -23,7 +24,7 @@ export const authApi = createApi({
         body,
       }),
     }),
-   
+
     loginUser: builder.mutation<any, { email: string; password: string }>({
       query: (body) => ({
         url: '/auth/login',
@@ -31,6 +32,7 @@ export const authApi = createApi({
         body,
       }),
     }),
+
     requestPasswordReset: builder.mutation<any, { email: string }>({
       query: (body) => ({
         url: '/auth/request-password-reset',
@@ -38,6 +40,7 @@ export const authApi = createApi({
         body,
       }),
     }),
+
     resetPassword: builder.mutation<any, { email: string; code: string; newPassword: string }>({
       query: (body) => ({
         url: '/auth/reset-password',
@@ -45,13 +48,14 @@ export const authApi = createApi({
         body,
       }),
     }),
+
     getProfile: builder.query<any, void>({
       query: () => ({
         url: '/auth/me',
       }),
     }),
 
-    // NEW MUTATIONS
+    // New: requestEmailVerification
     requestEmailVerification: builder.mutation<any, { email: string }>({
       query: (body) => ({
         url: '/auth/request-email-verification',
@@ -59,6 +63,8 @@ export const authApi = createApi({
         body,
       }),
     }),
+
+    // New: verifyEmailCode
     verifyEmailCode: builder.mutation<any, { email: string; code: string }>({
       query: (body) => ({
         url: '/auth/verify-email-code',
@@ -66,6 +72,7 @@ export const authApi = createApi({
         body,
       }),
     }),
+
     // 1) Register Tenant + Owner in one go
     registerTenantAndOwner: builder.mutation<
       any,
@@ -87,6 +94,7 @@ export const authApi = createApi({
       }),
     }),
 
+    // 2) registerUserOnly
     registerUserOnly: builder.mutation<
       any,
       {
@@ -104,8 +112,12 @@ export const authApi = createApi({
         body,
       }),
     }),
-    // NEW QUERIES
-    updateProfile: builder.mutation<any, { firstName?: string; lastName?: string; phoneNumber?: string; profileImage?: string }>({
+
+    // Update Profile
+    updateProfile: builder.mutation<
+      any,
+      { firstName?: string; lastName?: string; phoneNumber?: string; profileImage?: string }
+    >({
       query: (body) => ({
         url: '/auth/update-profile',
         method: 'PATCH',
@@ -113,7 +125,7 @@ export const authApi = createApi({
       }),
     }),
 
-    // Example: change password
+    // Change Password
     changePassword: builder.mutation<any, { currentPassword: string; newPassword: string }>({
       query: (body) => ({
         url: '/auth/change-password',
@@ -121,6 +133,7 @@ export const authApi = createApi({
         body,
       }),
     }),
+
     uploadAvatar: builder.mutation<any, FormData>({
       query: (formData) => ({
         url: '/auth/upload-avatar',
@@ -128,13 +141,14 @@ export const authApi = createApi({
         body: formData,
       }),
     }),
+
     enableMFA: builder.mutation<any, void>({
       query: () => ({
         url: '/auth/enable-mfa',
         method: 'POST',
       }),
     }),
-    
+
     verifyMFASetup: builder.mutation<any, { token: string }>({
       query: (body) => ({
         url: '/auth/verify-mfa-setup',
@@ -142,6 +156,7 @@ export const authApi = createApi({
         body,
       }),
     }),
+
     listTenantUsers: builder.query<any[], void>({
       query: () => ({
         url: '/auth/tenant-users',
@@ -149,10 +164,35 @@ export const authApi = createApi({
       }),
       transformResponse: (response: { success: boolean; data: any[] }) => response.data,
     }),
+
+    // -----------------------
+    // NEW MUTATION:
+    // /auth/register-and-login-user
+    // calls your "registerAndLoginUser" in AuthController
+    // for the 3-step process: request code -> verify -> register + login
+    registerAndLoginUser: builder.mutation<
+      any,
+      {
+        email: string;
+        code?: string; // optional if verifying
+        firstName?: string;
+        lastName?: string;
+        roles?: string[];
+        password?: string;
+      }
+    >({
+      query: (body) => ({
+        url: '/auth/register-and-login-user',
+        method: 'POST',
+        body,
+      }),
+    }),
+    // -----------------------
   }),
 });
 
 export const {
+  // existing
   useLoginUserMutation,
   useRequestPasswordResetMutation,
   useResetPasswordMutation,
@@ -166,8 +206,9 @@ export const {
   useRegisterTenantAndOwnerMutation,
   useRegisterUserOnlyMutation,
   useCreateAdminUserMutation,
-  
-
   useEnableMFAMutation,
   useVerifyMFASetupMutation,
+
+  // new
+  useRegisterAndLoginUserMutation,
 } = authApi;

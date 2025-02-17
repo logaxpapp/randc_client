@@ -27,6 +27,7 @@ const TenantProfilePage: React.FC = () => {
   const userRoles: string[] = user?.roles ?? [];
   const tenantId = user?.tenant; // single-tenant approach
 
+
   // If you prefer route param:
   // const { tenantId } = useParams();
 

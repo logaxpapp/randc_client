@@ -1,4 +1,3 @@
-// src/components/Settings/WorkingHoursSection.tsx
 import React, { useState, useEffect } from 'react';
 import { FaSync, FaSave, FaClock } from 'react-icons/fa';
 import { useAppSelector } from '../../app/hooks';
@@ -6,11 +5,6 @@ import {
   useUpdateTenantMutation,
   useGetTenantByIdQuery,
 } from '../../features/tenant/tenantApi';
-import WorkDayCard from './WorkDayCard';
-import ApplyToAllCard from './ApplyToAllCard';
-
-// Define a type for AM/PM
-type AmPm = 'AM' | 'PM';
 
 interface IBreak {
   start: string;
@@ -19,8 +13,8 @@ interface IBreak {
 
 interface IWorkDay {
   dayOfWeek: number;
-  openTime: string;  // in 24-hour format, e.g. "09:30"
-  closeTime: string; // in 24-hour format, e.g. "17:45"
+  openTime: string;  // e.g. "09:30" in 24-hour format
+  closeTime: string; // e.g. "17:45"
   breaks: IBreak[];
 }
 
@@ -34,159 +28,125 @@ const daysOfWeek = [
   'Saturday',
 ];
 
-// Helpers to convert 24-hour <-> 12-hour times
-const parse24To12 = (time24: string): { hour12: number; minute: number; amPm: AmPm } => {
-  if (!time24) {
-    return { hour12: 12, minute: 0, amPm: 'AM' };
-  }
-
-  const [hourStr, minuteStr] = time24.split(':');
-  let hour = parseInt(hourStr, 10);
-  const minute = parseInt(minuteStr, 10);
-  const amPm: AmPm = hour >= 12 ? 'PM' : 'AM';
-
-  if (hour === 0) {
-    hour = 12; // 00:xx is 12 AM
-  } else if (hour > 12) {
-    hour -= 12; // e.g. 13 => 1 PM
-  }
-
-  return { hour12: hour, minute, amPm };
-};
-
-const parse12To24 = (hour12: number, minute: number, amPm: AmPm): string => {
-  let hour24 = hour12;
-
-  if (amPm === 'AM' && hour24 === 12) {
-    hour24 = 0; // 12 AM = 00:xx
-  } else if (amPm === 'PM' && hour24 !== 12) {
-    hour24 += 12; // e.g. 1 PM => 13
-  }
-
-  const hh = hour24.toString().padStart(2, '0');
-  const mm = minute.toString().padStart(2, '0');
-  return `${hh}:${mm}`;
-};
-
 const WorkingHoursSection: React.FC = () => {
   const user = useAppSelector((state) => state.auth.user);
   const tenantId = user?.tenant;
 
-  // Fetch Tenant
+  // 1) Load the tenant data
   const {
     data: tenantData,
     isLoading: tenantLoading,
+    isError,
   } = useGetTenantByIdQuery(tenantId || '', { skip: !tenantId });
 
-  // Update Tenant Mutation
+  // 2) The updateTenant mutation
   const [updateTenant, { isLoading: updatingTenant }] = useUpdateTenantMutation();
 
-  // Local state for work days
+  // 3) Local state for the entire array of workDays
   const [workDays, setWorkDays] = useState<IWorkDay[]>([]);
 
-  // State for Apply to All
-  const [applyToAll, setApplyToAll] = useState<{
-    openTime: { hour12: number; minute: number; amPm: AmPm };
-    closeTime: { hour12: number; minute: number; amPm: AmPm };
-  }>({
-    openTime: { hour12: 9, minute: 0, amPm: 'AM' },
-    closeTime: { hour12: 5, minute: 0, amPm: 'PM' },
-  });
-  const [isApplying, setIsApplying] = useState(false);
+  // 4) "Apply to all" local state
+  // We'll store 24-hour "HH:MM" format strings for open/close times
+  const [applyOpenTime, setApplyOpenTime] = useState('09:00');
+  const [applyCloseTime, setApplyCloseTime] = useState('17:00');
 
-  // Populate local state when we get tenantData
+  // 5) Populate local state from tenantData
   useEffect(() => {
     if (tenantData?.settings?.workDays) {
-      setWorkDays(tenantData.settings.workDays);
+      // We expect an array of up to 7 items (index = dayOfWeek).
+      // But if some days are missing, we can fill them in.
+      const existingWorkDays = tenantData.settings.workDays;
+
+      // We'll ensure dayOfWeek 0..6 all exist
+      const newWorkDays: IWorkDay[] = [];
+      for (let d = 0; d < 7; d++) {
+        const found = existingWorkDays.find((wd) => wd.dayOfWeek === d);
+        if (found) {
+          newWorkDays.push({
+            dayOfWeek: d,
+            openTime: found.openTime,
+            closeTime: found.closeTime,
+            breaks: found.breaks || [],
+          });
+        } else {
+          // If not found, create a default
+          newWorkDays.push({
+            dayOfWeek: d,
+            openTime: '09:00',
+            closeTime: '17:00',
+            breaks: [],
+          });
+        }
+      }
+      setWorkDays(newWorkDays);
     } else {
-      // Initialize with default values if not present
-      setWorkDays(daysOfWeek.map((_, index) => ({
-        dayOfWeek: index,
-        openTime: '09:00',
-        closeTime: '17:00',
-        breaks: [],
-      })));
+      // No workDays found, initialize all 7 days with defaults
+      const defaults: IWorkDay[] = [];
+      for (let d = 0; d < 7; d++) {
+        defaults.push({
+          dayOfWeek: d,
+          openTime: '09:00',
+          closeTime: '17:00',
+          breaks: [],
+        });
+      }
+      setWorkDays(defaults);
     }
   }, [tenantData]);
 
-  // Handle user changes to hour/minute/amPm for individual days
+  // 6) Handler: apply open/close times to all days
+  const handleApplyToAll = () => {
+    const updated = workDays.map((wd) => ({
+      ...wd,
+      openTime: applyOpenTime,
+      closeTime: applyCloseTime,
+    }));
+    setWorkDays(updated);
+    alert('Applied the same open/close times to all days.');
+  };
+
+  // 7) Handler: user changes a single day’s openTime/closeTime
   const handleTimeChange = (
     dayIndex: number,
     field: 'openTime' | 'closeTime',
-    hour12: number,
-    minute: number,
-    amPm: AmPm
+    value: string
   ) => {
-    setWorkDays(prevWorkDays => {
-      const updatedWorkDays = [...prevWorkDays];
-      updatedWorkDays[dayIndex] = {
-        ...updatedWorkDays[dayIndex],
-        [field]: parse12To24(hour12, minute, amPm),
+    setWorkDays((prev) => {
+      const newDays = [...prev];
+      newDays[dayIndex] = {
+        ...newDays[dayIndex],
+        [field]: value,
       };
-      return updatedWorkDays;
+      return newDays;
     });
   };
 
-  // Handle changes in the Apply to All section
-  const handleApplyToAllChange = (
-    field: 'openTime' | 'closeTime',
-    value: number | 'AM' | 'PM',
-    subField?: 'hour12' | 'minute'
-  ) => {
-    setApplyToAll(prev => {
-      const updated = { ...prev };
-      if (field === 'openTime' || field === 'closeTime') {
-        if (typeof value === 'number' && subField) {
-          updated[field][subField] = value;
-        } else if (typeof value === 'string') {
-          updated[field].amPm = value;
-        }
-      }
-      return updated;
-    });
-  };
-
-  // Handle Apply to All action
-  const handleApplyToAll = () => {
-    setIsApplying(true);
-    const { openTime, closeTime } = applyToAll;
-
-    const newOpenTime = parse12To24(openTime.hour12, openTime.minute, openTime.amPm);
-    const newCloseTime = parse12To24(closeTime.hour12, closeTime.minute, closeTime.amPm);
-
-    const updatedWorkDays = workDays.map(day => ({
-      ...day,
-      openTime: newOpenTime,
-      closeTime: newCloseTime,
-    }));
-
-    setWorkDays(updatedWorkDays);
-    setIsApplying(false);
-    alert('Working hours have been applied to all days.');
-  };
-
-  // Save updated times
+  // 8) Save to server
   const handleSave = async () => {
-    if (!tenantData) return;
+    if (!tenantId || !tenantData) return;
     try {
+      // Build the final settings object
+      // We'll keep the rest of tenantData.settings as is
+      const updatedSettings = {
+        ...tenantData.settings,
+        workDays, // our new array
+      };
+
       await updateTenant({
-        tenantId: tenantId!,
+        tenantId,
         data: {
-          settings: {
-            ...tenantData.settings,
-            workDays,
-          },
+          settings: updatedSettings,
         },
       }).unwrap();
 
       alert('Working hours updated successfully!');
     } catch (err: any) {
-      console.error(err);
+      console.error('Failed to update:', err);
       alert(err?.data?.message || 'Failed to update working hours.');
     }
   };
 
-  // If still loading tenant data
+  // 9) If loading or error
   if (tenantLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -194,52 +154,102 @@ const WorkingHoursSection: React.FC = () => {
       </div>
     );
   }
+  if (isError) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <p className="text-red-500">Error loading working hours.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-5xl mx-auto p-4">
-      {/* Vital message */}
+      {/* Vital message at the top */}
       <div className="mb-6">
         <div className="p-4 bg-blue-50 border border-blue-100 rounded-md shadow">
           <p className="text-center text-blue-700 font-medium">
-            Please ensure you properly set AM/PM for each day's times!
+            Please confirm your daily open/close times. Use 24-hour format or pick from the time picker.
           </p>
         </div>
       </div>
 
       <div className="bg-white p-6 rounded-md shadow-md">
+        {/* Header */}
         <div className="flex items-center mb-6">
           <FaClock className="text-indigo-600 mr-3" size={24} />
           <h2 className="text-2xl font-semibold text-gray-800">Working Hours</h2>
         </div>
 
         <p className="text-gray-600 mb-6">
-          Set your open and close times (with AM/PM) for each day of the week. You can also apply the same times to all days to save time.
+          Set your open and close times for each day of the week. Or apply the same schedule to all days below.
         </p>
 
         {/* Apply to All Section */}
-        <ApplyToAllCard
-          openTime={applyToAll.openTime}
-          closeTime={applyToAll.closeTime}
-          onApplyToAllChange={handleApplyToAllChange}
-          onApply={handleApplyToAll}
-          isApplying={isApplying}
-        />
+        <div className="border p-4 rounded-md mb-6">
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">Apply to All</h3>
+          <div className="flex flex-row items-center space-x-4">
+            {/* Open Time */}
+            <div>
+              <label className="text-sm text-gray-600 block mb-1">Open Time</label>
+              <input
+                type="time"
+                className="border border-gray-300 rounded p-2"
+                value={applyOpenTime}
+                onChange={(e) => setApplyOpenTime(e.target.value)}
+              />
+            </div>
+            {/* Close Time */}
+            <div>
+              <label className="text-sm text-gray-600 block mb-1">Close Time</label>
+              <input
+                type="time"
+                className="border border-gray-300 rounded p-2"
+                value={applyCloseTime}
+                onChange={(e) => setApplyCloseTime(e.target.value)}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleApplyToAll}
+              className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300 transition"
+            >
+              Apply
+            </button>
+          </div>
+        </div>
 
         {/* Work Days List */}
-        <div>
-          {daysOfWeek.map((dayName, index) => (
-            <WorkDayCard
-              key={dayName}
-              dayName={dayName}
-              workDay={workDays[index] || {
-                dayOfWeek: index,
-                openTime: '09:00',
-                closeTime: '17:00',
-                breaks: [],
-              }}
-              onTimeChange={handleTimeChange}
-              dayIndex={index}
-            />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {workDays.map((wd, index) => (
+            <div
+              key={wd.dayOfWeek}
+              className="border p-4 rounded-md shadow-sm flex flex-col space-y-3"
+            >
+              <h4 className="text-lg font-semibold text-gray-700">
+                {daysOfWeek[wd.dayOfWeek]}
+              </h4>
+              {/* Open Time */}
+              <div>
+                <label className="text-sm text-gray-600 block mb-1">Open Time</label>
+                <input
+                  type="time"
+                  className="border border-gray-300 rounded p-2 w-full"
+                  value={wd.openTime}
+                  onChange={(e) => handleTimeChange(index, 'openTime', e.target.value)}
+                />
+              </div>
+              {/* Close Time */}
+              <div>
+                <label className="text-sm text-gray-600 block mb-1">Close Time</label>
+                <input
+                  type="time"
+                  className="border border-gray-300 rounded p-2 w-full"
+                  value={wd.closeTime}
+                  onChange={(e) => handleTimeChange(index, 'closeTime', e.target.value)}
+                />
+              </div>
+              {/* Breaks would go here if you want */}
+            </div>
           ))}
         </div>
 

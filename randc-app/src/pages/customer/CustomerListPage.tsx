@@ -1,4 +1,5 @@
 // src/pages/CustomerListPage.tsx
+
 import React, { useState, useMemo } from 'react';
 import {
   FaPlus,
@@ -63,7 +64,6 @@ const CustomerListPage: React.FC = () => {
   const filteredCustomers = useMemo(() => {
     if (!customers) return [];
     return customers.filter((customer) => {
-      // Use ?? '' so TypeScript sees a string
       const first = customer.firstName?.toLowerCase() ?? '';
       const last = customer.lastName?.toLowerCase() ?? '';
       const email = customer.email?.toLowerCase() ?? '';
@@ -84,6 +84,7 @@ const CustomerListPage: React.FC = () => {
     setEditingCustomer(null);
     setModalOpen(true);
   };
+
   const handleCloseModal = () => {
     setModalOpen(false);
     setEditingCustomer(null);
@@ -165,6 +166,7 @@ const CustomerListPage: React.FC = () => {
   const handleOpenBulkModal = () => {
     setBulkModalOpen(true);
   };
+
   const handleCloseBulkModal = () => {
     setBulkModalOpen(false);
   };
@@ -265,7 +267,7 @@ Jane,Doe,jane@example.com,987-654
     },
   ];
 
-  // 8) Render
+  // 8) Loading / Error states
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-50">
@@ -274,6 +276,7 @@ Jane,Doe,jane@example.com,987-654
       </div>
     );
   }
+
   if (isError) {
     return (
       <div className="p-4 text-red-500 flex flex-col items-center">
@@ -285,100 +288,144 @@ Jane,Doe,jane@example.com,987-654
     );
   }
 
+  // ───────────────────────────────────────────────────────────
+  // 9) Render with wave/gradient background + vital message
+  // ───────────────────────────────────────────────────────────
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      {/* Vital message banner */}
-      <div className="bg-blue-100 border border-blue-200 text-blue-700 px-4 py-3 rounded mb-4">
-        <p>
-          <strong>Important:</strong> Ensure you have the correct permissions to manage customers.
-        </p>
+    <section className="relative w-full min-h-screen overflow-hidden text-gray-800">
+      <div className="sticky top-0 z-10 bg-yellow-200 text-yellow-800 p-3 font-semibold shadow-md">
+        <strong>Vital Message:</strong> Manage your customers effectively to ensure smooth operations!
       </div>
 
-      <div className="flex flex-col md:flex-row items-center justify-between mb-6">
-        <h1 className="text-3xl font-semibold text-gray-800 mb-4 md:mb-0">Customer Management</h1>
-        <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4 w-full md:w-auto">
-          {/* Search Bar */}
-          <div className="relative w-full md:w-64">
-            <FiSearch className="absolute top-3 left-3 text-gray-400" />
-            <input
-              type="text"
-              className="pl-10 pr-4 py-2 w-full border rounded-md focus:outline-none
-                         focus:ring-2 focus:ring-blue-500 transition-colors duration-150"
-              placeholder="Search customers..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1);
-              }}
-              aria-label="Search customers"
+      {/* --- Top Wave Divider --- */}
+      <div className="absolute top-0 left-0 w-full rotate-180 leading-none z-0">
+        <svg
+          className="block w-full h-20 md:h-32 lg:h-48"
+          viewBox="0 0 1440 320"
+          preserveAspectRatio="none"
+        >
+          <path
+            fill="#3b82f6"
+            fillOpacity="1"
+            d="M0,224L48,224C96,224,192,224,288,197.3C384,171,480,117,576,96C672,75,768,85,864,112C960,139,1056,181,1152,170.7C1248,160,1344,96,1392,64L1440,32L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+          />
+        </svg>
+      </div>
+
+      {/* Background Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-blue-200 via-white to-lime-100 z-0" />
+
+      <div className="relative z-10 p-6 min-h-screen">
+        {/* Header / Actions */}
+        <div className="flex flex-col md:flex-row items-center justify-between mb-6">
+          <h1 className="text-3xl font-semibold text-gray-800 mb-4 md:mb-0">
+            Customer Management
+          </h1>
+          <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4 w-full md:w-auto">
+            {/* Search Bar */}
+            <div className="relative w-full md:w-64">
+              <FiSearch className="absolute top-3 left-3 text-gray-400" />
+              <input
+                type="text"
+                className="pl-10 pr-4 py-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-150"
+                placeholder="Search customers..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
+                aria-label="Search customers"
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex space-x-2">
+              <Tooltip message="Download CSV Template" position="top">
+                <Button variant="secondary" onClick={handleDownloadTemplate}>
+                  <FaDownload className="mr-1" />
+                  Template
+                </Button>
+              </Tooltip>
+              <Tooltip message="Bulk Upload Customers" position="top">
+                <Button variant="secondary" onClick={handleOpenBulkModal}>
+                  <FaUpload className="mr-1" />
+                  Bulk Upload
+                </Button>
+              </Tooltip>
+              <Tooltip message="Add New Customer" position="top">
+                <Button variant="primary" onClick={handleOpenCreate}>
+                  <FaPlus className="mr-1" />
+                  New
+                </Button>
+              </Tooltip>
+            </div>
+          </div>
+        </div>
+
+        {/* DataTable */}
+        <div className="overflow-x-auto bg-white rounded-lg shadow">
+          <DataTable columns={columns} data={paginatedCustomers} rowHeight={60} height={600} />
+        </div>
+
+        {/* Pagination */}
+        {filteredCustomers.length > itemsPerPage && (
+          <div className="mt-4 flex justify-center">
+            <Pagination
+              currentPage={currentPage}
+              totalItems={filteredCustomers.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
             />
           </div>
-          <div className="flex space-x-2">
-            {/* Download Template */}
-            <Tooltip message="Download CSV Template" position="top">
-              <Button variant="secondary" onClick={handleDownloadTemplate}>
-                <FaDownload className="mr-1" />
-                Template
-              </Button>
-            </Tooltip>
-            {/* Bulk Upload */}
-            <Tooltip message="Bulk Upload Customers" position="top">
-              <Button variant="secondary" onClick={handleOpenBulkModal}>
-                <FaUpload className="mr-1" />
-                Bulk Upload
-              </Button>
-            </Tooltip>
-            {/* Create Customer */}
-            <Tooltip message="Add New Customer" position="top">
-              <Button variant="primary" onClick={handleOpenCreate}>
-                <FaPlus className="mr-1" />
-                New
-              </Button>
-            </Tooltip>
-          </div>
-        </div>
+        )}
+
+        {/* CREATE/EDIT MODAL */}
+        <CustomerModal
+          isOpen={modalOpen}
+          initialData={editingCustomer || undefined}
+          onClose={handleCloseModal}
+          onSave={handleSaveCustomer}
+        />
+
+        {/* BULK UPLOAD MODAL */}
+        <BulkUploadModal
+          isOpen={bulkModalOpen}
+          onClose={handleCloseBulkModal}
+          onUpload={handleUploadFile}
+        />
+
+        {/* CONFIRM DIALOG */}
+        <ConfirmDialog
+          isOpen={confirmOpen}
+          title="Confirm Action"
+          message={confirmMessage}
+          onConfirm={handleConfirm}
+          onCancel={() => setConfirmOpen(false)}
+        />
+
+        {/* TOAST */}
+        <Toast
+          show={toast.show}
+          message={toast.message}
+          onClose={() => setToast({ ...toast, show: false })}
+        />
       </div>
 
-      {/* DataTable */}
-      <div className="overflow-x-auto bg-white rounded-lg shadow">
-        <DataTable columns={columns} data={paginatedCustomers} rowHeight={60} height={600} />
-      </div>
-
-      {/* Pagination */}
-      {filteredCustomers.length > itemsPerPage && (
-        <div className="mt-4 flex justify-center">
-          <Pagination
-            currentPage={currentPage}
-            totalItems={filteredCustomers.length}
-            itemsPerPage={itemsPerPage}
-            onPageChange={setCurrentPage}
+      {/* --- Bottom Wave Divider --- */}
+      <div className="absolute bottom-0 w-full leading-none z-0">
+        <svg
+          className="block w-full h-20 md:h-32 lg:h-48"
+          viewBox="0 0 1440 320"
+          preserveAspectRatio="none"
+        >
+          <path
+            fill="#3b82f6"
+            fillOpacity="1"
+            d="M0,64L48,64C96,64,192,64,288,101.3C384,139,480,213,576,224C672,235,768,181,864,165.3C960,149,1056,171,1152,186.7C1248,203,1344,213,1392,218.7L1440,224L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"
           />
-        </div>
-      )}
-
-      {/* CREATE/EDIT MODAL */}
-      <CustomerModal
-        isOpen={modalOpen}
-        initialData={editingCustomer || undefined}
-        onClose={handleCloseModal}
-        onSave={handleSaveCustomer}
-      />
-
-      {/* BULK UPLOAD MODAL */}
-      <BulkUploadModal isOpen={bulkModalOpen} onClose={handleCloseBulkModal} onUpload={handleUploadFile} />
-
-      {/* CONFIRM DIALOG */}
-      <ConfirmDialog
-        isOpen={confirmOpen}
-        title="Confirm Action"
-        message={confirmMessage}
-        onConfirm={handleConfirm}
-        onCancel={() => setConfirmOpen(false)}
-      />
-
-      {/* TOAST */}
-      <Toast show={toast.show} message={toast.message} onClose={() => setToast({ ...toast, show: false })} />
-    </div>
+        </svg>
+      </div>
+    </section>
   );
 };
 

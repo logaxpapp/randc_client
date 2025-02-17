@@ -1,182 +1,143 @@
-// src/components/FooterSection.tsx
-
-
-import { motion } from 'framer-motion';
+import React from "react";
+import { motion } from "framer-motion";
+import logo from "../../../assets/images/logo.png"; // Replace with your actual logo path
 
 function FooterSection() {
   return (
-    <footer className="relative bg-gradient-to-br from-blue-900 to-blue-800 text-gray-100 overflow-hidden">
-      {/* Larger Wave at the BOTTOM */}
-      <div 
-        className="
-          absolute 
-          bottom-0 
-          left-0 
-          w-full 
-          h-28 
-          bg-white
-          clip-path-[polygon(0_50%,100%_0%,100%_100%,0_100%)]
-        "
-      />
+    <footer className="relative bg-[#101820] text-gray-300 overflow-hidden">
+      {/* === Shape Divider (Top) === */}
+      <div className="absolute top-0 left-0 w-full rotate-180 leading-none z-0 bg-gray-800">
+        <svg
+          className="block w-full h-16 md:h-24 lg:h-32"
+          viewBox="0 0 1440 320"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            fill="#101820"
+            fillOpacity="1"
+            d="M0,224L48,186.7C96,149,192,75,288,85.3C384,96,480,192,576,234.7C672,277,768,267,864,224C960,181,1056,107,1152,96C1248,85,1344,139,1392,165.3L1440,192L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"
+          />
+        </svg>
+      </div>
 
       <motion.div
-        className="relative z-10 pt-16 pb-8 px-6 max-w-7xl mx-auto"
+        className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-12 md:py-16"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
         viewport={{ once: true }}
       >
-        {/* TOP ROW */}
-        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-8">
-          {/* LEFT BLOCK: BRAND + ABOUT + SOCIAL */}
-          <div className="md:max-w-sm space-y-5">
-            <h2 className="text-3xl font-extrabold text-white">
-              R&C Cleaning
-            </h2>
-            <p className="text-base leading-relaxed text-gray-200">
-              We connect professional cleaners with clients worldwide. 
-              Discover top-rated experts and exceptional services for 
-              all your cleaning needs, right at your fingertips.
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+          {/* Column 1: Brand & About */}
+          <div>
+            <div className="flex items-center mb-4">
+              <img src={logo} alt="R&C Logo" className="h-10 w-auto mr-2" />
+              <span className="text-xl font-bold text-white uppercase tracking-wide">
+                R&C Cleaning
+              </span>
+            </div>
+            <p className="text-sm leading-relaxed text-gray-400">
+              We’re a professional cleaning company offering a wide range of
+              services to meet your every need. From deep cleans to ongoing
+              maintenance, our team is dedicated to delivering top-tier results.
             </p>
-            <div className="flex space-x-4 text-2xl mt-2">
-              <a href="#" className="hover:text-green-400">
-                <i className="fab fa-facebook-f"></i>
-              </a>
-              <a href="#" className="hover:text-green-400">
-                <i className="fab fa-twitter"></i>
-              </a>
-              <a href="#" className="hover:text-green-400">
-                <i className="fab fa-instagram"></i>
-              </a>
-              <a href="#" className="hover:text-green-400">
-                <i className="fab fa-linkedin-in"></i>
-              </a>
+          </div>
+
+          {/* Column 2: Services */}
+          <div>
+            <h4 className="text-lg font-semibold text-white mb-4">Services</h4>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <a href="#" className="hover:text-amber-400 transition">
+                  Inventory Management
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-amber-400 transition">
+                  Deep Cleaning
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-amber-400 transition">
+                  Renovations & Additions
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-amber-400 transition">
+                  Kitchen Remodeling
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 3: Contact Info */}
+          <div>
+            <h4 className="text-lg font-semibold text-white mb-4">
+              Contact Info
+            </h4>
+            <div className="space-y-2 text-sm">
+              <p>Address: 1108 Berry Street, Old Hickory</p>
+              <p>Phone: +1 (615) 481-3592</p>
+              <p>Email: support@rnc.com</p>
             </div>
           </div>
 
-          {/* LINKS BLOCKS */}
-          <div className="grid grid-cols-2 gap-8 md:flex md:space-x-16">
-            {/* QUICK LINKS */}
-            <div className="space-y-4">
-              <h3 className="text-xl font-semibold text-white">Quick Links</h3>
-              <ul className="text-base space-y-2">
-                <li>
-                  <a href="#" className="hover:text-green-400">
-                    About Us
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-green-400">
-                    Services
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-green-400">
-                    Pricing
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-green-400">
-                    FAQs
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-green-400">
-                    Contact Us
-                  </a>
-                </li>
-              </ul>
-            </div>
-            {/* RESOURCES */}
-            <div className="space-y-4">
-              <h3 className="text-xl font-semibold text-white">
-                Resources
-              </h3>
-              <ul className="text-base space-y-2">
-                <li>
-                  <a href="#" className="hover:text-green-400">
-                    Blog
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-green-400">
-                    Case Studies
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-green-400">
-                    Help Center
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-green-400">
-                    Community
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-green-400">
-                    Privacy Policy
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          {/* NEWSLETTER */}
-          <div className="space-y-4 md:max-w-xs">
-            <h3 className="text-xl font-semibold text-white">
-              Stay Updated
-            </h3>
-            <p className="text-base text-gray-200 leading-relaxed">
-              Sign up for cleaning tips and news about our platform.
-              We’ll never spam you, guaranteed!
+          {/* Column 4: Newsletter */}
+          <div>
+            <h4 className="text-lg font-semibold text-white mb-4">
+              Newsletter
+            </h4>
+            <p className="text-sm text-gray-400 mb-4">
+              Stay up-to-date with the latest news, cleaning tips, and trends in
+              the industry. Subscribe to our newsletter!
             </p>
-            <form className="flex flex-col space-y-3">
-              <div className="flex items-center bg-white rounded-full px-3 py-2">
-                <input
-                  type="email"
-                  placeholder="Your email address"
-                  className="flex-1 text-gray-700 outline-none bg-transparent"
-                />
-              </div>
-              <button
-                type="submit"
-                className="
-                  bg-yellow-400
-                  hover:bg-green-400
-                  text-white
-                  font-bold
-                  py-2
-                  rounded-full
-                  transition
-                  duration-200
-                    ease-in-out
-                "
-              >
-                Subscribe
+            <div className="flex">
+              <input
+                type="email"
+                placeholder="Your Email"
+                className="border border-gray-600 rounded-l px-3 py-2 w-full
+                  focus:outline-none focus:ring-2 focus:ring-amber-400 transition
+                  text-gray-800"
+              />
+              <button className="bg-amber-400 hover:bg-amber-500 text-gray-800 font-medium py-2 px-4 rounded-r transition">
+                →
               </button>
-            </form>
+            </div>
           </div>
         </div>
       </motion.div>
-
-      {/* BOTTOM ROW: COPYRIGHT, TERMS, ETC. */}
-      <div className="relative z-10 bg-[#081a10] bg-opacity-80 py-4 mt-8">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row md:justify-between md:items-center text-sm text-gray-50">
-          <div className="text-center md:text-left mb-2 md:mb-0">
-            &copy; {new Date().getFullYear()} R&C Cleaning. All rights reserved.
-          </div>
-          <div className="flex flex-col md:flex-row md:space-x-4 text-center md:text-right">
-            <a href="#" className="hover:text-green-400">
-              Terms of Service
+      {/* === Shape Divider (Bottom) === */}
+      <div className="absolute bottom-0 left-0 w-full leading-none z-0 ">
+        <svg
+          className="block w-full h-16 md:h-24 lg:h-32 bg-amber-400 mt-8"
+          viewBox="0 0 1440 320"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            fill="#171717"
+            fillOpacity="1"
+            d="M0,32L48,42.7C96,53,192,75,288,85.3C384,96,480,96,576,122.7C672,149,768,203,864,224C960,245,1056,235,1152,218.7C1248,203,1344,181,1392,170.7L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+          />
+        </svg>
+      </div>
+       {/* Bottom bar */}
+       <div className="bg-[#171717] py-4">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-4 flex flex-col md:flex-row items-center justify-between text-sm text-gray-400">
+          <p>
+            © 2024 R&C Cleaning <span className="hidden md:inline-block">|</span>{" "}
+            All rights reserved.
+          </p>
+          <p className="mt-2 md:mt-0">
+            Designed by{" "}
+            <a
+              href="#"
+              className="text-white hover:text-amber-500 transition"
+            >
+              Chris Bajo
             </a>
-            <a href="#" className="hover:text-green-400">
-              Cookie Policy
-            </a>
-            <a href="#" className="hover:text-green-400">
-              Privacy Policy
-            </a>
-          </div>
+          </p>
         </div>
       </div>
     </footer>

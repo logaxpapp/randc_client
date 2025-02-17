@@ -72,8 +72,8 @@ const TenantStaff: React.FC<TenantStaffProps> = ({ tenantId }) => {
     const lower = searchTerm.toLowerCase();
     return staffList.filter(
       (s) =>
-        s.firstName.toLowerCase().includes(lower) ||
-        s.lastName.toLowerCase().includes(lower) ||
+        s.firstName?.toLowerCase().includes(lower) ||
+        s.lastName?.toLowerCase().includes(lower) ||
         s.role?.toLowerCase().includes(lower)
     );
   }, [staffList, searchTerm]);

@@ -33,6 +33,18 @@ import { reorderRequestApi } from '../features/reorderRequests/reorderRequestApi
 import { safetyApi } from '../features/safety/safetyApi';
 import { reviewApi } from '../features/review/reviewApi';
 import { receiptApi } from '../features/receipt/receiptApi';
+import { publicApi } from '../features/public/publicApi';
+import { promoApi}  from '../features/promo/promoApi';
+import { walletApi } from '../features/wallet/walletApi';
+import { recommendedPlanApi } from '../features/recommended/recommendedPlanApi';
+import { recommendedApi } from '../features/recommended/recommendedApi';
+import { subscriptionFeatureApi } from '../features/subscriptionFeature/subscriptionFeatureApi';
+import { tenantVerificationApi } from '../features/tenantVerification/tenantVerificationApi';
+import { userNotificationSettingsApi } from '../features/notificationSettings/userNotificationSettingsApi';
+import { favoriteApi } from '../features/favorite/favoriteApi';
+import { jobCardApi } from '../features/jobCard/jobCardApi';
+import { staffScheduleApi } from '../features/staffAvailability/staffScheduleApi';
+
 
 // 1) Combine all reducers
 const rootReducer = combineReducers({
@@ -66,6 +78,17 @@ const rootReducer = combineReducers({
   [safetyApi.reducerPath]: safetyApi.reducer,
   [reviewApi.reducerPath]: reviewApi.reducer,
   [receiptApi.reducerPath]: receiptApi.reducer,
+  [publicApi.reducerPath]: publicApi.reducer,
+  [promoApi.reducerPath]: promoApi.reducer,
+  [walletApi.reducerPath]: walletApi.reducer,
+  [recommendedPlanApi.reducerPath]: recommendedPlanApi.reducer,
+  [recommendedApi.reducerPath]: recommendedApi.reducer,
+  [subscriptionFeatureApi.reducerPath]: subscriptionFeatureApi.reducer,
+  [tenantVerificationApi.reducerPath]: tenantVerificationApi.reducer,
+  [userNotificationSettingsApi.reducerPath]: userNotificationSettingsApi.reducer,
+  [favoriteApi.reducerPath]: favoriteApi.reducer,
+  [jobCardApi.reducerPath]: jobCardApi.reducer,
+  [staffScheduleApi.reducerPath]: staffScheduleApi.reducer,
 });
 
 // 2) Persist config
@@ -112,6 +135,17 @@ export const store = configureStore({
       safetyApi.middleware,
       reviewApi.middleware,
       receiptApi.middleware,
+      publicApi.middleware,
+      promoApi.middleware,
+      walletApi.middleware,
+      recommendedPlanApi.middleware,
+      recommendedApi.middleware,
+      subscriptionFeatureApi.middleware,
+      tenantVerificationApi.middleware,
+      userNotificationSettingsApi.middleware,
+      favoriteApi.middleware,
+      jobCardApi.middleware,
+      staffScheduleApi.middleware,
     ),
 });
 

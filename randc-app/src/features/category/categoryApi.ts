@@ -16,6 +16,21 @@ export interface CategoryPayload {
   // tags?: string[];
 }
 
+interface PaginatedCategoryResponse {
+  success: boolean;
+  data: Category[];
+  total: number;
+  currentPage: number;
+  totalPages: number;
+}
+
+interface ListCategoriesQueryParams {
+  page: number;
+  limit: number;
+  search?: string;
+}
+
+
 export const categoryApi = createApi({
   reducerPath: 'categoryApi',
   baseQuery: customBaseQuery,
@@ -30,20 +45,18 @@ export const categoryApi = createApi({
       invalidatesTags: [{ type: 'Category', id: 'LIST' }],
     }),
 
-    listCategories: builder.query<Category[], void>({
-      query: () => '/categories',
-      transformResponse: (response: { success: boolean; data: Category[] }) =>
-        response.data,
+    listCategories: builder.query<PaginatedCategoryResponse, ListCategoriesQueryParams>({
+      query: ({ page, limit, search = "" }) =>
+        `/categories?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`,
+      transformResponse: (response: PaginatedCategoryResponse) => response,
       providesTags: (result) =>
         result
           ? [
-              ...result.map(({ _id }) => ({ type: 'Category' as const, id: _id })),
-              { type: 'Category', id: 'LIST' },
+              ...result.data.map(({ _id }) => ({ type: "Category" as const, id: _id })),
+              { type: "Category", id: "LIST" },
             ]
-          : [{ type: 'Category', id: 'LIST' }],
+          : [{ type: "Category", id: "LIST" }],
     }),
-
-
     /**
      * 3) Search Categories
      *    If you ever want a separate endpoint for advanced searching:
@@ -64,7 +77,6 @@ export const categoryApi = createApi({
           ? [...result.map(({ _id }) => ({ type: 'Category' as const, id: _id }))]
           : [],
     }),
-
     /**
      * 4) Get Category by ID
      */

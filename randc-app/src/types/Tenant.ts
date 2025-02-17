@@ -48,6 +48,12 @@ export interface WorkDay {
     contactPerson?: contactPerson;
     email?: string;
     website?: string;
+    bannerImages?: string[]; 
+    location?: {
+      type: string;
+      coordinates: number[];
+    };
+    locationEnabled: boolean;
     //  setSelectedAmenities(tenantData.amenities || []);
     //  setSelectedSafety(tenantData.safetyMeasures || []);
     amenities?: string[];

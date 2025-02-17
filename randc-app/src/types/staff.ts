@@ -4,6 +4,8 @@
  * If your backend always returns these fields, 
  * define them as required to match the front-end shape.
  */
+
+import { User } from "./user";
 export interface StaffPayload {
     _id: string;
     tenant: string;
@@ -36,6 +38,13 @@ export interface StaffPayload {
     employeeId?: string;
     // ... (any other staff-only fields)
   }
+
+  export interface PopulatedTenant {
+    _id: string;
+    name: string;
+    domain?: string;
+    email?: string;
+  }
   
   export interface StaffTransformed {
     _id: string;
@@ -43,6 +52,8 @@ export interface StaffPayload {
     lastName: string;
     role: string;
     isActive: boolean;
+    tenant: PopulatedTenant;
+    employeeId?: string;
     // ...
   }
 
@@ -54,10 +65,14 @@ export interface StaffPayload {
     isActive: boolean;
   }
   
-  // Suppose your modal/form data is shaped like this:
-  export interface StaffFormData {
-    _id?: string;
-    localRole: string;
-    isActive: boolean;
-    employeeId?: string;
-  }
+ // StaffFormData now also tracks first/last name
+export interface StaffFormData {
+  _id?: string;
+  firstName?: string;
+  lastName?: string;
+  userEmail?: string;
+  userDisplayName?: string;
+  localRole: string;
+  isActive: boolean;
+  employeeId?: string;
+}

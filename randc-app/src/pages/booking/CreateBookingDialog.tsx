@@ -20,6 +20,7 @@ export interface BookingCreateFormValues {
   serviceId: string;
   customerId?: string;
   staffId?: string;
+  seekerId?: string;
   timeSlotId?: string;
   notes?: string;
   nonUserEmail?: string;
@@ -80,6 +81,7 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({
     timeSlotId: '',
     notes: '',
     nonUserEmail: '',
+    seekerId: '',
     specialRequests: {
       hasPets: false,
       numberOfRooms: 1,

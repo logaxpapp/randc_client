@@ -1,256 +1,213 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { AiOutlineUser } from "react-icons/ai";
+import { AnimatePresence, motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import heroBackground from "../../../assets/images/hall2.png";
+import SuperSearchBar from "./SuperSearchBar";
 
-// Remove if you don't need Leaflet or replace with your own CSS
-import 'leaflet/dist/leaflet.css';
+const actionText = [
+  "Empowering Cleaners & Clients",
+  
+  "Streamlining Your Business",
+  "We Make Cleaning Make Sense",
+];
 
-// Sample images; replace with your own
-import bannerImage from '../../../assets/images/one.png';
-import imgStatic from '../../../assets/images/image2.png';
-import imgSet1A from '../../../assets/images/image3.png';
-import imgSet1B from '../../../assets/images/image1.png';
-import imgSet2A from '../../../assets/images/image2.png';
-import imgSet2B from '../../../assets/images/stock2.png';
+const containerVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      delayChildren: 0.2,
+      staggerChildren: 0.1,
+    },
+  },
+};
 
-function HeroSection() {
-  // -- Rotating images state/logic for the 3-column grid below
-  const [showFirstMidImage, setShowFirstMidImage] = useState(true);
-  const [showFirstRightImage, setShowFirstRightImage] = useState(true);
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      ease: "easeOut",
+    },
+  },
+};
 
+const advancedHeadlineVariants = [
+  {
+    initial: { opacity: 0, y: 40 },
+    animate: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: "easeOut" },
+    },
+    exit: {
+      opacity: 0,
+      y: -40,
+      transition: { duration: 0.6, ease: "easeIn" },
+    },
+  },
+  {
+    initial: { opacity: 0, scale: 0.5 },
+    animate: {
+      opacity: 1,
+      scale: 1,
+      transition: { duration: 0.6, ease: "easeOut" },
+    },
+    exit: {
+      opacity: 0,
+      scale: 0.5,
+      transition: { duration: 0.6, ease: "easeIn" },
+    },
+  },
+  {
+    initial: { opacity: 0, rotate: -10 },
+    animate: {
+      opacity: 1,
+      rotate: 0,
+      transition: { duration: 0.6, ease: "easeOut" },
+    },
+    exit: {
+      opacity: 0,
+      rotate: 10,
+      transition: { duration: 0.6, ease: "easeIn" },
+    },
+  },
+  {
+    initial: { opacity: 0, x: -100 },
+    animate: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.6, ease: "easeOut" },
+    },
+    exit: {
+      opacity: 0,
+      x: 100,
+      transition: { duration: 0.6, ease: "easeIn" },
+    },
+  },
+];
+
+const HeroSection: React.FC = () => {
+  // ============ State ============
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [location, setLocation] = useState("");
+  const [category, setCategory] = useState("");
+  const [isAdvancedSearchOpen, setIsAdvancedSearchOpen] = useState(false);
+
+  // ============ Animated Headline ============
   useEffect(() => {
-    const midInterval = setInterval(() => {
-      setShowFirstMidImage((prev) => !prev);
+    const interval = setInterval(() => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % actionText.length);
     }, 4000);
-    const rightInterval = setInterval(() => {
-      setShowFirstRightImage((prev) => !prev);
-    }, 5000);
-
-    return () => {
-      clearInterval(midInterval);
-      clearInterval(rightInterval);
-    };
+    return () => clearInterval(interval);
   }, []);
 
-  const midImageSrc = showFirstMidImage ? imgSet1A : imgSet1B;
-  const rightImageSrc = showFirstRightImage ? imgSet2A : imgSet2B;
+  const variantIndex = currentIndex % advancedHeadlineVariants.length;
 
-  // -- Search bar state
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showDropdown, setShowDropdown] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  // ============ Handlers ============
+  const handleSearchSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    // Implement search logic here (API calls, filtering, navigation, etc.)
+    console.log("Advanced Search:", { searchTerm, location, category });
+  };
 
-  // Example "recent searches" and "collections"
-  const recentSearches = [
-    'Office Cleaning',
-    'Move-Out Cleaning',
-    'Green Cleaning',
-    'Hotel Housekeeping',
-    'Laundry',
-    'Bathroom Cleaning',
-  ];
-  const collections = [
-    { title: 'Residential', count: 67 },
-    { title: 'Commercial', count: 85 },
-    { title: 'Industrial', count: 92 },
-    { title: 'Carpet Cleaning', count: 21 },
-    { title: 'Deep Clean', count: 15 },
-  ];
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setShowDropdown(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
+  // ============ Layout & Structure ============
   return (
-    <>
-      {/* HERO SECTION */}
+    <section className="relative w-full min-h-[80vh] text-white font-sans flex flex-col">
+     
+
+      {/* ======= Hero Background & Overlay ======= */}
       <div
-        className="relative w-full h-[700px] bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${bannerImage})` }}
-      >
-        {/* Dark overlay */}
-        <div className="absolute top-0 left-0 w-full h-full bg-gray-500 opacity-5" />
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url(${heroBackground})`,
+          backgroundAttachment: "fixed",
+        }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/70" />
 
-        {/* Optional floating motion elements */}
-        <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-40">
-          <motion.div
-            className="absolute z-50 w-12 h-12 rounded-full bg-yellow-200 bg-opacity-40 top-16 left-8 animate-bounce-slow"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse' }}
-          />
-          <motion.div
-            className="absolute z-50 w-16 h-16 rounded-full bg-white bg-opacity-30 top-44 right-16 animate-bounce-fast"
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: -5 }}
-            transition={{ duration: 1.5, repeat: Infinity, repeatType: 'reverse' }}
-          />
-        </div>
-
-        {/* Main hero content */}
-        <motion.div
-          className="relative z-50 flex flex-col items-center justify-center h-full text-white text-center px-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.0 }}
+      {/* ======= Header ======= */}
+      <header className="relative z-20 flex items-center justify-between w-full px-4 md:px-10 lg:px-20">
+        <Link
+          to="/"
+          className="text-lg md:text-xl font-black tracking-wider poppins-black"
         >
-          {/* Headline */}
-          <h1 className="text-4xl sm:text-5xl font-extrabold mb-3">
-            Empowering Cleaners & Clients
-          </h1>
-          <h2 className="text-xl sm:text-2xl md:text-3xl mb-5 font-semibold italic">
-            Book or Offer Professional Services with Ease
-          </h2>
           
+        </Link>
+        <div className="flex items-center space-x-2">
+          <AiOutlineUser className="text-2xl" />
+          <Link
+            to="/login"
+            className="uppercase text-sm tracking-wider font-semibold"
+          >
+            My Account
+          </Link>
+        </div>
+      </header>
 
-          {/* SEARCH BAR */}
-          <div className="relative mb-8 w-full sm:w-[600px]" ref={dropdownRef}>
-            <div className="flex flex-col sm:flex-row items-center bg-white rounded-full shadow-lg overflow-hidden w-full">
-              {/* "What" Input */}
-              <div className="flex items-center px-3 py-2 w-full sm:w-auto">
-                <i className="fas fa-search text-gray-400 mr-2"></i>
-                <input
-                  type="text"
-                  placeholder="What are you looking for?"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={() => setShowDropdown(true)}
-                  className="outline-none text-gray-800 flex-1 bg-transparent text-sm sm:text-base"
-                />
-              </div>
+      {/* ======= Hero Content ======= */}
+      <motion.div
+        className="relative z-10 container mx-auto px-6 md:px-12 lg:px-24 flex-grow flex flex-col  items-start pt-40 placeholder-fuchsia-300 text-left"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        whileInView="visible"
+        viewport={{ once: true }}
+      >
+        <AnimatePresence mode="wait">
+          <motion.h1
+            key={actionText[currentIndex]}
+            className="text-4xl md:text-5xl font-bold leading-tight  max-w-2xl poppins-black"
+            variants={advancedHeadlineVariants[variantIndex]}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+          >
+            {actionText[currentIndex]}
+          </motion.h1>
+        </AnimatePresence>
 
-              {/* Divider */}
-              <div className="w-full h-px bg-gray-200 sm:w-px sm:h-auto sm:mx-1" />
+        {/* ============ Advanced Search ============ */}
+      
+          <SuperSearchBar
+            onResults={(data) => {
+              
+            }}
+          />
 
-              {/* "Where" Input */}
-              <div className="flex items-center px-3 py-2 w-full sm:w-[150px]">
-                <i className="fas fa-map-marker-alt text-gray-400 mr-2"></i>
-                <input
-                  type="text"
-                  placeholder="City or ZIP"
-                  className="outline-none text-gray-800 flex-1 bg-transparent text-sm sm:text-base"
-                />
-              </div>
+        {/* ============ Supporting Text & Link ============ */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mt-8">
+          <motion.p
+            className="text-base md:text-lg font-light poppins-thin-italic"
+            variants={itemVariants}
+          >
+            We understand that a clean space is more than just a tidy appearance.
+            It’s about creating a healthy and comfortable environment where you can
+            truly relax and thrive. 
+          </motion.p>
 
-              {/* Divider */}
-              <div className="w-full h-px bg-gray-200 sm:w-px sm:h-auto sm:mx-1" />
-
-              {/* "When" Input */}
-              <div className="flex items-center px-3 py-2 w-full sm:w-[130px]">
-                <i className="far fa-clock text-gray-400 mr-2"></i>
-                <input
-                  type="date"
-                  className="outline-none text-gray-800 flex-1 bg-transparent text-sm sm:text-base"
-                />
-              </div>
-
-              {/* Search Button */}
-              <button className="bg-[#2F1C6A] hover:bg-blue-500 text-white px-4 py-1 font-semibold rounded-full transition sm:w-auto w-full">
-                Search
-              </button>
-            </div>
-
-            {/* The dropdown (conditional) */}
-            {showDropdown && (
-              <motion.div
-                initial={{ opacity: 0, y: -5 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2 }}
-                className="absolute left-0 mt-2 w-full bg-white text-gray-900 rounded shadow-lg z-50 p-4"
-              >
-                <h3 className="text-sm mb-2 font-medium">Recent searches</h3>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {recentSearches.map((item, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        setSearchQuery(item);
-                        setShowDropdown(false);
-                      }}
-                      className="bg-gray-100 px-2 py-1 rounded text-sm hover:bg-gray-200 flex items-center space-x-1"
-                    >
-                      <span>{item}</span>
-                      <i className="fas fa-search text-xs"></i>
-                    </button>
-                  ))}
-                </div>
-                <h3 className="text-sm mb-2 font-medium">Collections</h3>
-                <div className="flex flex-wrap gap-3">
-                  {collections.map((col, idx) => (
-                    <div
-                      key={idx}
-                      className="flex flex-col items-center text-center w-20"
-                    >
-                      <div className="w-16 h-16 bg-gray-200 rounded mb-1" />
-                      <p className="text-xs font-semibold">{col.title}</p>
-                      <p className="text-xs text-gray-500">{col.count} Photos</p>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </div>
-
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center gap-4">
+          <motion.div
+            className="flex items-center md:justify-end mt-4 md:mt-0"
+            variants={itemVariants}
+          >
             <Link
               to="/marketplace"
-              className="bg-[#D63063] hover:bg-[#c9184a] text-white px-6 py-3 rounded text-lg font-semibold transition"
+              className="inline-flex items-center bg-amber-400 text-gray-800 font-semibold px-8 py-5 rounded shadow-md hover:bg-yellow-500 transition-transform transform hover:scale-105"
             >
-              Explore Marketplace
+              Explore MarketPlace →
             </Link>
-            <a
-              href="#list-service"
-              className="hover:border-[#c9184a] bg-gray-100 text-[#D63063] hover:text-[#c9184a] px-6 py-3 rounded text-lg font-semibold transition"
-            >
-              List Your Service
-            </a>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* 3-COLUMN GRID BELOW HERO */}
-      <div className="relative w-full bg-gray-100 py-8">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {/* 1) Static left */}
-            <img
-              src={imgStatic}
-              alt="Static Cleaning"
-              className="w-full h-64 object-cover"
-            />
-            {/* 2) Middle rotating */}
-            <motion.img
-              key={showFirstMidImage ? imgSet1A : imgSet1B}
-              src={midImageSrc}
-              alt="Rotating Middle"
-              className="w-full h-64 object-cover"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8 }}
-            />
-            {/* 3) Right rotating */}
-            <motion.img
-              key={showFirstRightImage ? imgSet2A : imgSet2B}
-              src={rightImageSrc}
-              alt="Rotating Right"
-              className="w-full h-64 object-cover"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8 }}
-            />
-          </div>
+          </motion.div>
         </div>
-      </div>
-    </>
+      </motion.div>
+
+    
+    </section>
   );
-}
+};
 
 export default HeroSection;

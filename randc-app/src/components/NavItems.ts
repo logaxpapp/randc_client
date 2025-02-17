@@ -12,7 +12,7 @@ import {
   FaChartPie,   // Additional icon examples
 } from 'react-icons/fa';
  
-import ComingSoon from '../assets/images/coming-soon.png';
+import PowerfulEmailEditor from './layouts/PowerfulEmailEditor';
 
 // We store the *component* reference, so `icon: IconType;`
 export interface NavItem {
@@ -22,11 +22,22 @@ export interface NavItem {
   subItems?: NavItem[];
 }
 
-export const getNavItems = (role: 'admin' | 'cleaner' | 'user'): NavItem[] => {
+export const getNavItems = (role: 'admin' | 'cleaner' | 'seeker'): NavItem[] => {
   switch (role) {
     case 'admin':
       return [
-        { to: '/admin/dashboard/admin-calender', label: 'Dashboard', icon: FaChartPie,  },
+        { to: 
+          '/admin/dashboard',
+           label: 'Dashboard',
+            icon: FaChartPie, 
+          subItems: [
+            {
+              to: '/admin/dashboard/admin-calender',
+              label: 'Admin Calender',
+              icon: FaChartPie,
+            }, 
+          ],
+          },
         { to: '/admin/dashboard/admin-notifications', label: 'Notification', icon: FaUsers },
        
         {
@@ -40,8 +51,8 @@ export const getNavItems = (role: 'admin' | 'cleaner' | 'user'): NavItem[] => {
               icon: FaUsers,
             },
             {
-              to: '/admin/dashboard/user-management/create',
-              label: 'Create User',
+              to: '/admin/dashboard/wallet-manager',
+              label: 'Wallet',
               icon: FaUserCog,
             },
           ],
@@ -93,13 +104,13 @@ export const getNavItems = (role: 'admin' | 'cleaner' | 'user'): NavItem[] => {
               icon: FaLifeRing,
             },
             {
-              to: '/admin/subscription/about-us',
-              label: 'About Us',
+              to: '/admin/dashboard/subscription-feature-manager',
+              label: 'Features',
               icon: FaAngleDoubleRight,
             },
             {
-              to: '/admin/subscription/contact-us',
-              label: 'Contact Us',
+              to: '/admin/dashboard/verification-manager',
+              label: 'Verification',
               icon: FaEnvelope,
             },
             {
@@ -110,7 +121,7 @@ export const getNavItems = (role: 'admin' | 'cleaner' | 'user'): NavItem[] => {
           ],
         },
         {
-          to: '/admin/messages',
+          to: '/admin/dashboard/chat ',
           label: 'Messages',
           icon: FaClipboardList,
         },
@@ -120,20 +131,75 @@ export const getNavItems = (role: 'admin' | 'cleaner' | 'user'): NavItem[] => {
           icon: FaLifeRing,
         },
         {
-          to: '/admin/about-us',
-          label: 'About Us',
+          to: '/admin/dashboard/recommended-tab',
+          label: 'Recommended',
           icon: FaAngleDoubleRight,
         },
       ];
     case 'cleaner':
       return [
+        { to: '/cleaner/dashboard', label: 'Dashboard', icon: FaHome },
         { to: '/cleaner/dashboard/tenant-calendar', label: 'Overview', icon: FaHome },
         { to: '/cleaner/dashboard/tenant-bio', label: 'Tenancy', icon: FaLifeRing },
         { to: '/cleaner/dashboard/time-slot-list', label: 'Time Slot', icon: FaClipboardList },
-        { to: '/cleaner/dashboard/staff-list', label: 'Staff', icon: FaUserCog },
+        { 
+          to: '/cleaner/dashboard/staff-list',
+           label: 'Staff',
+            icon: FaUserCog
+          , subItems: [
+              {
+                to: '/cleaner/dashboard/staff-list',
+                label: 'Staff List',
+                icon: FaUserCog,
+              },
+              {
+                to: '/cleaner/dashboard/staff-availability',
+                label: 'Availability',
+                icon: FaUserCog,
+              },
+              {
+                to: '/cleaner/dashboard/job-card-manager',
+                label: 'JobCard',
+                icon: FaUserCog,
+              },
+              {
+                to: '/cleaner/dashboard/my-job-card',
+                label: 'MyJobCard',
+                icon: FaUserCog,
+              },
+              {
+                to: '/cleaner/dashboard/my-availability',
+                label: 'MyAvailability',
+                icon: FaUserCog,
+
+              },
+            ],
+          
+          },
         { to: '/cleaner/dashboard/gallery-list', label: 'Gallery', icon: FaToolbox },
         { to: '/cleaner/dashboard/chat', label: 'Messages', icon: FaEnvelope },
-        { to: '/cleaner/dashboard/cleaner-notifications', label: 'Notification', icon: FaAngleDoubleRight },
+        { to: '/cleaner/dashboard/cleaner-notifications', 
+          label: 'Notification', 
+          icon: FaAngleDoubleRight,
+         subItems: [
+            {
+              to: '/cleaner/dashboard/cleaner-wallet',
+              label: 'Wallet',
+              icon: FaAngleDoubleRight,
+            },
+            {
+              to: '/cleaner/dashboard/cleaner-recommended',
+              label: 'Recommended',
+              icon: FaAngleDoubleRight,
+            },
+            {
+              to: '/cleaner/dashboard/cleaner-notifications',
+              label: 'Notification',
+              icon: FaAngleDoubleRight,
+            },
+           
+          ],
+        },
         {
           to: '/cleaner/dashboard/tenant-bookings', // Make Bookings MGT clickable
           label: 'Bookings MGT',
@@ -165,8 +231,8 @@ export const getNavItems = (role: 'admin' | 'cleaner' | 'user'): NavItem[] => {
               icon: FaChartPie,
             },
             {
-              to: '/cleaner/dashboard/tenant-transaction',
-              label: 'Transaction',
+              to: '/cleaner/dashboard/verifications',
+              label: 'Verfication',
               icon: FaClipboardList,
             },
             {
@@ -178,15 +244,17 @@ export const getNavItems = (role: 'admin' | 'cleaner' | 'user'): NavItem[] => {
           ],
         },
       ];
-    case 'user':
+    case 'seeker':
     default:
       return [
-        { to: '/user/home', label: 'Home', icon: FaHome },
-        { to: '/user/bookings', label: 'My Bookings', icon: FaClipboardList },
-        { to: '/user/account', label: 'Account', icon: FaUserCog },
-        { to: '/user/messages', label: 'Messages', icon: FaEnvelope },
-        { to: '/user/help-faq', label: 'Book Mark', icon: FaLifeRing },
-        { to: '/user/dashboard/user-notifications', label: 'Notification', icon: FaAngleDoubleRight },
+        { to: '/seeker/dashboard/user-marketplace', label: 'Home', icon: FaHome },
+        { to: '/seeker/dashboard/user-booking-manager', label: 'My Bookings', icon: FaClipboardList },
+        { to: '/seeker/dashboard/chat', label: 'Messages', icon: FaEnvelope },
+        { to: '/seeker/dashboard/user-calendar', label: 'Calendar', icon: FaLifeRing },
+        { to: '/seeker/dashboard/user-notifications', label: 'Notification', icon: FaAngleDoubleRight },
+        { to: '/seeker/dashboard/user-profile', label: 'Profile', icon: FaUserCog },
+        { to: '/seeker/dashboard/user-reviews', label: 'Reviews', icon: FaAngleDoubleRight },
+        { to: '/seeker/dashboard/user-favorites', label: 'Favorites', icon: FaAngleDoubleRight },
       ];
   }
 };

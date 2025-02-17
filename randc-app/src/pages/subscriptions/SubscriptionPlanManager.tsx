@@ -1,5 +1,4 @@
 // src/pages/subscriptions/SubscriptionPlanManager.tsx
-
 import React, { useState, useMemo } from 'react';
 import clsx from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,7 +10,7 @@ import {
   FaListUl,
   FaTable,
   FaClipboardList,
-  FaTasks
+  FaTasks,
 } from 'react-icons/fa';
 import Toast from '../../components/ui/Toast';
 
@@ -26,103 +25,128 @@ import {
   usePublishPlanMutation,
 } from '../../features/subscriptionPlan/subscriptionPlanApi';
 
-/** 
- * SubscriptionPlanManager
- * A high-level page for managing subscription plans: All Plans, Create Plan, Manage Features
- */
+import {
+  useListFeaturesQuery,
+  SubscriptionFeature,
+} from '../../features/subscriptionFeature/subscriptionFeatureApi';
+
+// For numeric input
+import CurrencyInput from 'react-currency-input-field';
+// For multi/single selects
+import Select from 'react-select';
+
+import countryCurrency from 'country-currency';
+
+/** Convert the country-currency object into an array. */
+function getAllCountries() {
+  return Object.entries(countryCurrency).map(([code, info]) => ({
+    code,
+    country: info.country,
+    currency: info.currency,
+    symbol: info.symbol,
+  }));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Main Page
+////////////////////////////////////////////////////////////////////////////////
+
 const SubscriptionPlanManager: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'list' | 'create' | 'features'>('list');
   const [publishPlan] = usePublishPlanMutation();
 
-
   return (
-    <div className="max-w-6xl mx-auto p-4 space-y-4">
-      <motion.h1
-        className="text-2xl font-bold text-gray-800 mb-4 flex items-center"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <FaClipboardList className="mr-2 text-gray-500" />
-        Subscription Plans
-      </motion.h1>
-
-      {/* TABS (styled as row of icon-labeled buttons) */}
-      <div className="flex flex-wrap items-center gap-2 mb-2">
-        <TabButton
-          active={activeTab === 'list'}
-          icon={<FaClipboardList />}
-          label="All Plans"
-          onClick={() => setActiveTab('list')}
-        />
-        <TabButton
-          active={activeTab === 'create'}
-          icon={<FaPlus />}
-          label="Create Plan"
-          onClick={() => setActiveTab('create')}
-        />
-        <TabButton
-          active={activeTab === 'features'}
-          icon={<FaTasks />}
-          label="Manage Features"
-          onClick={() => setActiveTab('features')}
-        />
-      </div>
-
-      {/* TAB CONTENT */}
-      <AnimatePresence mode="wait">
-        {activeTab === 'list' && (
-          <motion.div
-            key="listTab"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.3 }}
-          >
-            <PlansListTab />
-          </motion.div>
-        )}
-        {activeTab === 'create' && (
-          <motion.div
-            key="createTab"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.3 }}
-          >
-            <CreatePlanTab onPlanCreated={() => setActiveTab('list')} />
-          </motion.div>
-        )}
-        {activeTab === 'features' && (
-          <motion.div
-            key="featuresTab"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.3 }}
-          >
-            <ManageFeaturesTab />
-          </motion.div>
-        )}
-      </AnimatePresence>
+    <section className="relative w-full min-h-screen overflow-hidden text-gray-800">
+    {/* 1) Vital message banner */}
+    <div className="sticky top-0 z-10 bg-yellow-200 text-yellow-800 p-1 font-semibold shadow-md">
+      <strong>Vital Message:</strong> Manage your subscription features here!
     </div>
+
+    {/* 2) Top wave */}
+    <div className="absolute top-0 left-0 w-full rotate-180 leading-none z-0">
+      <svg
+        className="block w-full h-20 md:h-32 lg:h-48"
+        viewBox="0 0 1440 320"
+        preserveAspectRatio="none"
+      >
+        <path
+          fill="#3b82f6"
+          fillOpacity="1"
+          d="M0,224L48,224C96,224,192,224,288,197.3C384,171,480,117,576,117C672,117,768,139,864,139C960,139,1056,117,1152,101.3C1248,85,1344,75,1392,69.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+        />
+      </svg>
+    </div>
+
+    {/* 3) Background gradient */}
+    <div className="absolute inset-0 bg-gradient-to-b from-white via-white to-lime-100 z-0" />
+      <div className="relative z-10 max-w-6xl mx-auto p-4 space-y-4 ">
+        <motion.h1
+          className="text-2xl font-bold text-gray-800 mb-4 flex items-center"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <FaClipboardList className="mr-2 text-gray-500" />
+          Subscription Plans
+        </motion.h1>
+
+        {/* Tabs */}
+        <div className="flex flex-wrap items-center gap-2 mb-2">
+          <TabButton
+            active={activeTab === 'list'}
+            icon={<FaClipboardList />}
+            label="All Plans"
+            onClick={() => setActiveTab('list')}
+          />
+          <TabButton
+            active={activeTab === 'create'}
+            icon={<FaPlus />}
+            label="Create Plan"
+            onClick={() => setActiveTab('create')}
+          />
+          <TabButton
+            active={activeTab === 'features'}
+            icon={<FaTasks />}
+            label="Manage Features"
+            onClick={() => setActiveTab('features')}
+          />
+        </div>
+
+        <AnimatePresence mode="wait">
+          {activeTab === 'list' && <PlansListTab />}
+          {activeTab === 'create' && <CreatePlanTab onPlanCreated={() => setActiveTab('list')} />}
+          {activeTab === 'features' && <ManageFeaturesTab />}
+        </AnimatePresence>
+      </div>
+    {/* Bottom wave */}
+    <div className="absolute bottom-0 w-full leading-none z-0">
+        <svg
+          className="block w-full h-20 md:h-32 lg:h-48"
+          viewBox="0 0 1440 320"
+          preserveAspectRatio="none"
+        >
+          <path
+            fill="#3b82f6"
+            fillOpacity="1"
+            d="M0,64L48,64C96,64,192,64,288,90.7C384,117,480,171,576,160C672,149,768,75,864,53.3C960,32,1056,64,1152,74.7C1248,85,1344,75,1392,69.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+          />
+        </svg>
+      </div>
+    </section>
   );
 };
 
 export default SubscriptionPlanManager;
 
-/** 
- * A reusable tab button that matches your screenshot style.
- */
+/******************************************************************************
+ * Reusable TabButton
+ *****************************************************************************/
 interface TabButtonProps {
   active: boolean;
   icon: React.ReactNode;
   label: string;
   onClick: () => void;
 }
-
-
-
 const TabButton: React.FC<TabButtonProps> = ({ active, icon, label, onClick }) => {
   return (
     <button
@@ -142,57 +166,20 @@ const TabButton: React.FC<TabButtonProps> = ({ active, icon, label, onClick }) =
 
 /* ------------------------------------------------------------------
    TAB #1: All Plans
-   - Toggle between Card View and List View
-   - Publish/Unpublish, Edit, Delete
 ------------------------------------------------------------------ */
 const PlansListTab: React.FC = () => {
   const { data: plans, isLoading, isError, refetch } = useListPlansQuery();
-  const [updatePlan] = useUpdatePlanMutation();
   const [deletePlan] = useDeletePlanMutation();
   const [publishPlan] = usePublishPlanMutation();
 
-  // For editing
+  // For editing modal
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingPlan, setEditingPlan] = useState<SubscriptionPlan | null>(null);
 
-  // Toggle between card or table view
+  // Card vs List
   const [viewMode, setViewMode] = useState<'card' | 'list'>('list');
 
-  // Handlers
-  const togglePublish = async (plan: SubscriptionPlan) => {
-    try {
-      // plan.publishedAt => means it is "published" if not null
-      const newPublishState = !plan.publishedAt;
-      // Call the publishPlan mutation
-      await publishPlan({ planId: plan._id, publish: newPublishState }).unwrap();
-    } catch (err) {
-      console.error('Failed to toggle publish:', err);
-    }
-  };
-
-  const handleDelete = async (planId: string) => {
-    if (!window.confirm('Are you sure you want to delete this plan?')) return;
-    try {
-      await deletePlan(planId).unwrap();
-    } catch (err) {
-      console.error('Failed to delete plan:', err);
-    }
-  };
-
-  const handleEditClick = (plan: SubscriptionPlan) => {
-    setEditingPlan(plan);
-    setShowEditModal(true);
-  };
-
-  const closeEditModal = () => {
-    setEditingPlan(null);
-    setShowEditModal(false);
-  };
-
-  // Render states
-  if (isLoading) {
-    return <div>Loading subscription plans...</div>;
-  }
+  if (isLoading) return <div>Loading subscription plans...</div>;
   if (isError) {
     return (
       <div className="text-red-500">
@@ -207,9 +194,37 @@ const PlansListTab: React.FC = () => {
     return <div>No subscription plans found.</div>;
   }
 
+  // Handlers
+  const handleTogglePublish = async (plan: SubscriptionPlan) => {
+    try {
+      const newPublishState = !plan.publishedAt;
+      await publishPlan({ planId: plan._id, publish: newPublishState }).unwrap();
+    } catch (err) {
+      console.error('Failed to publish/unpublish:', err);
+    }
+  };
+
+  const handleDelete = async (planId: string) => {
+    if (!window.confirm('Are you sure you want to delete this plan?')) return;
+    try {
+      await deletePlan(planId).unwrap();
+    } catch (err) {
+      console.error('Failed to delete plan:', err);
+    }
+  };
+
+  const openEditModal = (plan: SubscriptionPlan) => {
+    setEditingPlan(plan);
+    setShowEditModal(true);
+  };
+  const closeEditModal = () => {
+    setEditingPlan(null);
+    setShowEditModal(false);
+  };
+
   return (
     <>
-      {/* VIEW MODE TOGGLE */}
+      {/* View Mode Toggle */}
       <div className="mb-4 flex items-center gap-2">
         <span className="text-sm text-gray-600">View:</span>
         <button
@@ -238,8 +253,8 @@ const PlansListTab: React.FC = () => {
         </button>
       </div>
 
+      {/* Card or List */}
       {viewMode === 'card' ? (
-        /* CARD VIEW */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {plans.map((plan) => (
             <motion.div
@@ -247,42 +262,30 @@ const PlansListTab: React.FC = () => {
               className="border rounded-lg shadow-sm bg-white p-4 flex flex-col justify-between"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.3 }}
             >
-              {/* Plan Header */}
               <div>
-                <h2 className="text-xl font-bold text-gray-800 mb-1">{plan.name}</h2>
+                <h2 className="text-xl font-bold text-gray-800">{plan.name}</h2>
                 <p className="text-sm text-gray-600">
-                  Price: <span className="font-semibold">${plan.price.toFixed(2)}</span>
+                  Price: <strong>${plan.price.toFixed(2)}</strong>
                 </p>
-                <p className="text-sm text-gray-600 mt-1">
-                  Published:{' '}
-                  {plan.publishedAt ? (
-                    <span className="text-green-600 font-medium">Yes</span>
-                  ) : (
-                    <span className="text-gray-400">No</span>
-                  )}
+                <p className="text-sm text-gray-600">
+                  Published: {plan.publishedAt ? 'Yes' : 'No'}
                 </p>
                 {plan.description && (
-                  <p className="mt-2 text-gray-500 text-sm line-clamp-3">
-                    {plan.description}
-                  </p>
+                  <p className="text-sm text-gray-500 mt-2 line-clamp-3">{plan.description}</p>
                 )}
               </div>
-
-              {/* Actions */}
               <div className="mt-4 flex justify-between items-center">
                 <button
-                  onClick={() => togglePublish(plan)}
-                  className="mr-2 bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600"
+                  onClick={() => handleTogglePublish(plan)}
+                  className="bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600"
                 >
                   {plan.publishedAt ? 'Unpublish' : 'Publish'}
                 </button>
-
-                <div className="space-x-2">
+                <div className="flex space-x-2">
                   <button
-                    onClick={() => handleEditClick(plan)}
+                    onClick={() => openEditModal(plan)}
                     className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
                   >
                     <FaEdit />
@@ -299,63 +302,79 @@ const PlansListTab: React.FC = () => {
           ))}
         </div>
       ) : (
-        /* LIST VIEW */
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           <div className="overflow-x-auto border rounded shadow bg-white">
-            <table className="min-w-full">
-              <thead className="bg-gray-100">
-                <tr className="text-gray-700">
-                  <th className="py-3 px-4 text-left font-medium border-b">Name</th>
-                  <th className="py-3 px-4 text-left font-medium border-b">Price</th>
-                  <th className="py-3 px-4 text-left font-medium border-b">Published</th>
-                  <th className="py-3 px-4 text-right font-medium border-b">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {plans.map((plan) => (
-                  <tr key={plan._id} className="hover:bg-gray-50 transition">
-                    <td className="py-2 px-4 border-b">{plan.name}</td>
-                    <td className="py-2 px-4 border-b">${plan.price.toFixed(2)}</td>
-                    <td className="py-2 px-4 border-b">
-                      {plan.publishedAt ? (
-                        <span className="text-green-600 font-semibold">Yes</span>
-                      ) : (
-                        <span className="text-gray-400">No</span>
-                      )}
-                    </td>
-                    <td className="py-2 px-4 border-b text-right space-x-2">
-                      <button
-                        onClick={() => togglePublish(plan)}
-                        className="bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600"
-                      >
-                        {plan.publishedAt ? 'Unpublish' : 'Publish'}
-                      </button>
-                      <button
-                        onClick={() => handleEditClick(plan)}
-                        className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
-                      >
-                        <FaEdit />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(plan._id)}
-                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                      >
-                        <FaTrash />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <table className="min-w-full">
+        <thead className="bg-gray-100">
+          <tr className="text-gray-700">
+            <th className="py-3 px-4 text-left font-medium border-b">Name</th>
+            <th className="py-3 px-4 text-left font-medium border-b">Price</th>
+            <th className="py-3 px-4 text-left font-medium border-b">Published</th>
+            <th className="py-3 px-4 text-left font-medium border-b">Countries</th>
+            <th className="py-3 px-4 text-left font-medium border-b">Currencies</th>
+            <th className="py-3 px-4 text-right font-medium border-b">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {plans.map((plan) => {
+            // Build summary strings from the array
+            const countriesList = plan.countryPricing
+              .map((cp) => cp.countryCode)
+              .join(', ');
+
+            const currencyList = plan.countryPricing
+              .map((cp) => cp.currency)
+              .join(', ');
+
+            return (
+              <tr key={plan._id} className="hover:bg-gray-50 transition">
+                <td className="py-2 px-4 border-b">{plan.name}</td>
+                <td className="py-2 px-4 border-b">${plan.price.toFixed(2)}</td>
+                <td className="py-2 px-4 border-b">
+                  {plan.publishedAt ? (
+                    <span className="text-green-600 font-semibold">Yes</span>
+                  ) : (
+                    <span className="text-gray-400">No</span>
+                  )}
+                </td>
+                {/* Use the summary strings */}
+                <td className="py-2 px-4 border-b">
+                  {countriesList || <span className="text-gray-400">N/A</span>}
+                </td>
+                <td className="py-2 px-4 border-b">
+                  {currencyList || <span className="text-gray-400">N/A</span>}
+                </td>
+
+                <td className="py-2 px-4 border-b text-right space-x-2">
+                  <button
+                    onClick={() => handleTogglePublish(plan)}
+                    className="bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600"
+                  >
+                    {plan.publishedAt ? 'Unpublish' : 'Publish'}
+                  </button>
+                  <button
+                    onClick={() => openEditModal(plan)}
+                    className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                  >
+                    <FaEdit />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(plan._id)}
+                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                  >
+                    <FaTrash />
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
           </div>
         </motion.div>
       )}
 
-      {/* EDIT PLAN MODAL */}
+      {/* EDIT Plan Modal */}
       <AnimatePresence>
         {showEditModal && editingPlan && (
           <motion.div
@@ -374,7 +393,7 @@ const PlansListTab: React.FC = () => {
               <button
                 className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
                 onClick={closeEditModal}
-                aria-label="Close Edit Modal"
+                aria-label="Close"
               >
                 <FaTimes />
               </button>
@@ -387,27 +406,78 @@ const PlansListTab: React.FC = () => {
   );
 };
 
-/** 
+/******************************************************************************
  * EditPlanForm
- * Allows updating plan name, price, and description
- */
+ *****************************************************************************/
 interface EditPlanFormProps {
   plan: SubscriptionPlan;
   onClose: () => void;
 }
 const EditPlanForm: React.FC<EditPlanFormProps> = ({ plan, onClose }) => {
   const [updatePlan, { isLoading }] = useUpdatePlanMutation();
+
   const [name, setName] = useState(plan.name);
-  const [price, setPrice] = useState(plan.price);
-  const [description, setDescription] = useState(plan.description || '');
+  const [price, setPrice] = useState<number>(plan.price);
+  const [description, setDescription] = useState(plan.description ?? '');
+
+  // If plan already has some countryPricing
+  const [countryPricing, setCountryPricing] = useState(plan.countryPricing ?? []);
+
+  // For new row
+  const [countryValue, setCountryValue] = useState('');
+  const [currencyValue, setCurrencyValue] = useState('');
+  const [cpPrice, setCpPrice] = useState<number | ''>('');
+
+  // Build a list from country-currency
+  const allCountries = useMemo(() => getAllCountries(), []);
+  const countryOptions = useMemo(() => {
+    return allCountries.map((obj) => ({
+      value: obj.code,
+      label: obj.country,
+      currency: obj.currency,
+    }));
+  }, [allCountries]);
+
+  // Add a new item
+  const addCountryPricing = () => {
+    if (!countryValue || !currencyValue || cpPrice === '') return;
+    setCountryPricing((prev) => [
+      ...prev,
+      { countryCode: countryValue, currency: currencyValue, price: Number(cpPrice) },
+    ]);
+    setCountryValue('');
+    setCurrencyValue('');
+    setCpPrice('');
+  };
+
+  // Remove
+  const removeCountryItem = (idx: number) => {
+    setCountryPricing((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  // On user selects a country from the dropdown
+  const handleCountrySelect = (opt: any) => {
+    if (!opt) {
+      setCountryValue('');
+      setCurrencyValue('');
+      return;
+    }
+    setCountryValue(opt.value); // e.g. "NG"
+    setCurrencyValue(opt.currency); // e.g. "NGN"
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await updatePlan({
         planId: plan._id,
-        data: { name, price, description },
-      }).unwrap();
+        data: {
+          name,
+          price,
+          description,
+          countryPricing, 
+        },
+      }).unwrap();      
       onClose();
     } catch (err) {
       console.error('Failed to update plan:', err);
@@ -419,29 +489,22 @@ const EditPlanForm: React.FC<EditPlanFormProps> = ({ plan, onClose }) => {
       <h2 className="text-xl font-bold text-gray-800">Edit Plan</h2>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Plan Name
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Plan Name</label>
         <input
           className="w-full border rounded p-2"
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="e.g. Premium"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Price
-        </label>
-        <input
+        <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
+        <CurrencyInput
           className="w-full border rounded p-2"
-          type="number"
-          min={0}
-          step="0.01"
+          decimalsLimit={2}
           value={price}
-          onChange={(e) => setPrice(Number(e.target.value))}
+          onValueChange={(val) => setPrice(val ? Number(val) : 0)}
         />
       </div>
 
@@ -455,6 +518,76 @@ const EditPlanForm: React.FC<EditPlanFormProps> = ({ plan, onClose }) => {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
+      </div>
+
+      {/* Country Pricing List */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Country Pricing
+        </label>
+        {countryPricing.length === 0 && (
+          <p className="text-sm text-gray-400">No country-based pricing yet.</p>
+        )}
+        <ul className="space-y-2 mb-2">
+          {countryPricing.map((cp, idx) => (
+            <li key={idx} className="flex items-center justify-between">
+              <span className="text-sm">
+                {cp.countryCode} / {cp.currency} : ${cp.price.toFixed(2)}
+              </span>
+              <button
+                type="button"
+                className="text-red-500 hover:text-red-700"
+                onClick={() => removeCountryItem(idx)}
+              >
+                <FaTrash />
+              </button>
+            </li>
+          ))}
+        </ul>
+
+        {/* Add new item row */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+          {/* Country dropdown */}
+          <div className="flex-1">
+            <Select
+              options={countryOptions}
+              placeholder="Select Country"
+              value={
+                countryValue
+                  ? countryOptions.find((o) => o.value === countryValue)
+                  : null
+              }
+              onChange={handleCountrySelect}
+              isClearable
+            />
+          </div>
+
+          {/* Currency text */}
+          <input
+            className="border rounded p-2 w-16"
+            type="text"
+            placeholder="Curr"
+            value={currencyValue}
+            onChange={(e) => setCurrencyValue(e.target.value)}
+          />
+
+          {/* Price input */}
+          <CurrencyInput
+            className="border rounded p-2 w-24"
+            decimalsLimit={2}
+            placeholder="Price"
+            value={cpPrice}
+            onValueChange={(val) => setCpPrice(val ? Number(val) : '')}
+          />
+
+          <button
+            type="button"
+            className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+            onClick={addCountryPricing}
+          >
+            <FaPlus />
+          </button>
+        </div>
       </div>
 
       <div className="flex justify-end space-x-2">
@@ -479,59 +612,120 @@ const EditPlanForm: React.FC<EditPlanFormProps> = ({ plan, onClose }) => {
 
 /* ------------------------------------------------------------------
    TAB #2: CreatePlanTab
-   - Basic form for name, price, description, initial features
 ------------------------------------------------------------------ */
 interface CreatePlanTabProps {
   onPlanCreated?: () => void;
 }
-const CreatePlanTab: React.FC<CreatePlanTabProps> = ({ onPlanCreated }) => {
-  const [name, setName] = useState('');
-  const [price, setPrice] = useState<number | ''>('');
-  const [description, setDescription] = useState('');
-  const [featureInput, setFeatureInput] = useState('');
-  const [tempFeatures, setTempFeatures] = useState<string[]>([]);
-
+/******************************************************************************
+ * CreatePlanTab (the main fix is how we get allCountries)
+ *****************************************************************************/
+const CreatePlanTab: React.FC<{ onPlanCreated?: () => void }> = ({ onPlanCreated }) => {
   const [createPlan, { isLoading }] = useCreatePlanMutation();
 
-  // Add feature
-  const handleAddFeature = () => {
-    if (!featureInput.trim()) return;
-    setTempFeatures((prev) => [...prev, featureInput.trim()]);
-    setFeatureInput('');
-  };
+  const { data: allFeatures, isLoading: featLoading } = useListFeaturesQuery();
 
-  // Remove feature
-  const removeFeature = (feature: string) => {
-    setTempFeatures((prev) => prev.filter((f) => f !== feature));
-  };
+  const [name, setName] = useState('');
+  const [price, setPrice] = useState<number>(0);
+  const [description, setDescription] = useState('');
 
-  // Submit
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name || !price) {
-      alert('Name and Price are required.');
+  // Multi-select
+  const [selectedFeatures, setSelectedFeatures] = useState<{ label: string; value: string }[]>([]);
+
+  const featureOptions = useMemo(() => {
+    if (!allFeatures) return [];
+    return allFeatures.map((f) => ({ value: f._id, label: f.name }));
+  }, [allFeatures]);
+
+  // Country pricing
+  const [countryPricing, setCountryPricing] = useState<
+    { countryCode: string; currency: string; price: number }[]
+  >([]);
+
+  const [countryValue, setCountryValue] = useState('');
+  const [currencyValue, setCurrencyValue] = useState('');
+  const [cpPrice, setCpPrice] = useState<number | ''>('');
+
+  // Now we convert the object from 'country-currency' -> array
+  // at top-level we wrote "function getAllCountries()"
+  const allCountriesArr = useMemo(() => getAllCountries(), []);
+  const countryOptions = useMemo(() => {
+    return allCountriesArr.map((obj) => ({
+      value: obj.code,
+      label: obj.country,
+      currency: obj.currency,
+    }));
+  }, [allCountriesArr]);
+
+  const handleCountrySelect = (opt: any) => {
+    if (!opt) {
+      setCountryValue('');
+      setCurrencyValue('');
       return;
     }
+    setCountryValue(opt.value);
+    setCurrencyValue(opt.currency);
+  };
+
+  const addCountryPricingItem = () => {
+    if (!countryValue || !currencyValue || cpPrice === '') return;
+    setCountryPricing((prev) => [
+      ...prev,
+      { countryCode: countryValue, currency: currencyValue, price: Number(cpPrice) },
+    ]);
+    setCountryValue('');
+    setCurrencyValue('');
+    setCpPrice('');
+  };
+
+  const removeCountryPricingItem = (index: number) => {
+    setCountryPricing((prev) => prev.filter((_, i) => i !== index));
+  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name) {
+      alert('Plan name is required');
+      return;
+    }
+  
     try {
-      await createPlan({
+      // Extract feature IDs
+      const featureIds = selectedFeatures.map((o) => o.value);
+  
+      // Log data before submission
+      console.log("Submitting Plan Data:", {
         name,
-        price: Number(price),
+        price,
         description,
-        features: tempFeatures,
+        features: featureIds,
+        countryPricing,
+      });
+  
+      // Submit the request
+      const response = await createPlan({
+        name,
+        price,
+        description,
+        features: featureIds,
+        countryPricing,
       }).unwrap();
-
-      // Clear inputs
+  
+      console.log("Plan Created Successfully:", response);
+  
+      // Reset fields
       setName('');
-      setPrice('');
+      setPrice(0);
       setDescription('');
-      setTempFeatures([]);
-
+      setSelectedFeatures([]);
+      setCountryPricing([]);
+  
       onPlanCreated?.();
     } catch (err) {
       console.error('Failed to create plan:', err);
     }
   };
+  
 
+  // Render
   return (
     <motion.div
       className="bg-white rounded shadow p-6 max-w-xl"
@@ -541,6 +735,7 @@ const CreatePlanTab: React.FC<CreatePlanTabProps> = ({ onPlanCreated }) => {
     >
       <h2 className="text-xl font-bold mb-4 text-gray-800">Create a New Plan</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Name */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Plan Name <span className="text-red-500">*</span>
@@ -553,26 +748,19 @@ const CreatePlanTab: React.FC<CreatePlanTabProps> = ({ onPlanCreated }) => {
             placeholder="e.g. Premium"
           />
         </div>
-
+        {/* Price */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Price <span className="text-red-500">*</span>
-          </label>
-          <input
+          <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
+          <CurrencyInput
             className="w-full border rounded p-2"
-            type="number"
-            min={0}
-            step="0.01"
+            decimalsLimit={2}
             value={price}
-            onChange={(e) => setPrice(e.target.value ? Number(e.target.value) : '')}
-            placeholder="e.g. 29.99"
+            onValueChange={(val) => setPrice(val ? Number(val) : 0)}
           />
         </div>
-
+        {/* Description */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Description
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
           <textarea
             className="w-full border rounded p-2"
             rows={3}
@@ -581,49 +769,91 @@ const CreatePlanTab: React.FC<CreatePlanTabProps> = ({ onPlanCreated }) => {
             placeholder="Short plan description..."
           />
         </div>
-
-        {/* Initial Features */}
+        {/* Multi-select features */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Initial Features
+            Features
           </label>
-          <div className="flex items-center gap-2 mb-2">
+          {featLoading ? (
+            <p className="text-gray-500">Loading features...</p>
+          ) : (
+            <Select
+              isMulti
+              options={featureOptions}
+              value={selectedFeatures}
+              onChange={(vals) => setSelectedFeatures(vals as any)}
+              placeholder="Select Features"
+            />
+          )}
+        </div>
+        {/* Country-Specific Pricing */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Country-Specific Pricing
+          </label>
+          {countryPricing.length === 0 && (
+            <p className="text-sm text-gray-400">No country pricing added yet.</p>
+          )}
+          <ul className="space-y-2 mb-2">
+            {countryPricing.map((cp, index) => (
+              <li key={index} className="flex items-center justify-between">
+                <span className="text-sm">
+                  {cp.countryCode} / {cp.currency} : ${cp.price.toFixed(2)}
+                </span>
+                <button
+                  type="button"
+                  className="text-red-500 hover:text-red-700"
+                  onClick={() => removeCountryPricingItem(index)}
+                >
+                  <FaTrash />
+                </button>
+              </li>
+            ))}
+          </ul>
+
+          {/* Add new row */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <div className="flex-1">
+              <Select
+                placeholder="Select Country"
+                options={countryOptions}
+                value={
+                  countryValue
+                    ? countryOptions.find((o) => o.value === countryValue)
+                    : null
+                }
+                onChange={(opt: any) => handleCountrySelect(opt)}
+                isClearable
+              />
+            </div>
             <input
-              className="flex-1 border rounded p-2"
+              className="border rounded p-2 w-16"
               type="text"
-              value={featureInput}
-              onChange={(e) => setFeatureInput(e.target.value)}
-              placeholder="Add a feature..."
+              placeholder="Curr"
+              value={currencyValue}
+              onChange={(e) => setCurrencyValue(e.target.value.toUpperCase())}
+            />
+            <CurrencyInput
+              className="border rounded p-2 w-24"
+              decimalsLimit={2}
+              placeholder="Price"
+              value={cpPrice}
+              onValueChange={(val) => setCpPrice(val ? Number(val) : '')}
             />
             <button
               type="button"
               className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-              onClick={handleAddFeature}
+              onClick={() => {
+                if (!countryValue || !currencyValue || cpPrice === '') return;
+                addCountryPricingItem();
+              }}
             >
               <FaPlus />
             </button>
           </div>
-
-          {tempFeatures.length > 0 && (
-            <ul className="list-disc list-inside space-y-1">
-              {tempFeatures.map((feat) => (
-                <li key={feat} className="flex items-center justify-between">
-                  <span>{feat}</span>
-                  <button
-                    type="button"
-                    className="text-red-500 hover:text-red-700"
-                    onClick={() => removeFeature(feat)}
-                  >
-                    <FaTimes />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
         </div>
-
-        {/* Submit button */}
-        <div className="flex justify-end">
+        {/* Submit */}
+        <div className="flex justify-end mt-4">
           <button
             type="submit"
             disabled={isLoading}
@@ -639,188 +869,199 @@ const CreatePlanTab: React.FC<CreatePlanTabProps> = ({ onPlanCreated }) => {
 
 /* ------------------------------------------------------------------
    TAB #3: ManageFeaturesTab
-   - Select existing plan
-   - Show features, add/remove
-   - Toggle publish from here if desired
 ------------------------------------------------------------------ */
 const ManageFeaturesTab: React.FC = () => {
-    const { data: plans, isLoading, isError, refetch } = useListPlansQuery();
-    const [selectedPlanId, setSelectedPlanId] = useState<string>('');
-  
-    // We use the "publishPlan" mutation instead of updatePlan for toggling
-    const [publishPlan] = usePublishPlanMutation();
-  
-    const [addFeature] = useAddFeatureMutation();
-    const [removeFeature] = useRemoveFeatureMutation();
-  
-    // For controlling the toast
-    const [toastShow, setToastShow] = useState(false);
-    const [toastMessage, setToastMessage] = useState('');
-  
-    const closeToast = () => {
-      setToastShow(false);
-      setToastMessage('');
-    };
-  
-    const [featureInput, setFeatureInput] = useState('');
-  
-    const selectedPlan = useMemo(
-      () => plans?.find((p) => p._id === selectedPlanId),
-      [plans, selectedPlanId]
-    );
-  
-    if (isLoading) return <div>Loading subscription plans...</div>;
-    if (isError) {
-      return (
-        <div className="text-red-500">
-          Failed to load subscription plans.
-          <button className="underline ml-2" onClick={() => refetch()}>
-            Retry
-          </button>
-        </div>
-      );
-    }
-    if (!plans || plans.length === 0) {
-      return <div>No subscription plans found.</div>;
-    }
-  
-    // Handlers
-    const handleAddFeature = async () => {
-      if (!selectedPlanId || !featureInput.trim()) return;
-      try {
-        await addFeature({ planId: selectedPlanId, feature: featureInput.trim() }).unwrap();
-  
-        // Show success toast
-        setToastMessage('Feature added successfully!');
-        setToastShow(true);
-  
-        setFeatureInput('');
-      } catch (err) {
-        console.error('Failed to add feature:', err);
-        setToastMessage('Error adding feature.');
-        setToastShow(true);
-      }
-    };
-  
-    const handleRemoveFeature = async (feature: string) => {
-      if (!selectedPlanId) return;
-      try {
-        await removeFeature({ planId: selectedPlanId, feature }).unwrap();
-  
-        // Show success toast
-        setToastMessage('Feature removed successfully!');
-        setToastShow(true);
-      } catch (err) {
-        console.error('Failed to remove feature:', err);
-        setToastMessage('Error removing feature.');
-        setToastShow(true);
-      }
-    };
-  
-    const togglePublish = async () => {
-      if (!selectedPlan) return;
-      try {
-        const newPublishState = !selectedPlan.publishedAt;
-        await publishPlan({ planId: selectedPlan._id, publish: newPublishState }).unwrap();
-  
-        setToastMessage(
-          newPublishState ? 'Plan published successfully!' : 'Plan unpublished.'
-        );
-        setToastShow(true);
-      } catch (err) {
-        console.error('Failed to toggle publish:', err);
-        setToastMessage('Error toggling publish state.');
-        setToastShow(true);
-      }
-    };
-  
+  const { data: plans, isLoading, isError, refetch } = useListPlansQuery();
+  const [selectedPlanId, setSelectedPlanId] = useState<string>('');
+  const [publishPlan] = usePublishPlanMutation();
+  const [addFeature] = useAddFeatureMutation();
+  const [removeFeature] = useRemoveFeatureMutation();
+
+  // For listing real features:
+  const { data: allFeatures } = useListFeaturesQuery();
+
+  // Toast
+  const [toastShow, setToastShow] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const closeToast = () => {
+    setToastShow(false);
+    setToastMessage('');
+  };
+
+  // If you want a single selected feature to add:
+  const [selectedFeatureId, setSelectedFeatureId] = useState('');
+
+  const selectedPlan = useMemo(() => {
+    return plans?.find((p) => p._id === selectedPlanId);
+  }, [plans, selectedPlanId]);
+
+  if (isLoading) return <div>Loading subscription plans...</div>;
+  if (isError) {
     return (
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Select a plan to manage features:
-          </label>
-          <select
-            className="border rounded p-2 w-full max-w-md"
-            value={selectedPlanId}
-            onChange={(e) => setSelectedPlanId(e.target.value)}
-          >
-            <option value="">-- Choose a plan --</option>
-            {plans.map((plan) => (
-              <option key={plan._id} value={plan._id}>
-                {plan.name}
-              </option>
-            ))}
-          </select>
-        </div>
-  
-        {selectedPlan && (
-          <motion.div
-            className="border p-4 rounded space-y-4 bg-white shadow"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div>
-              <h3 className="text-lg font-bold text-gray-800">{selectedPlan.name}</h3>
-              <p className="text-sm text-gray-600">
-                Price: <strong>${selectedPlan.price.toFixed(2)}</strong>
-              </p>
-              <p className="text-sm text-gray-600">
-                Published: {selectedPlan.publishedAt ? 'Yes' : 'No'}
-              </p>
-              <button
-                className="mt-2 bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700"
-                onClick={togglePublish}
-              >
-                {selectedPlan.publishedAt ? 'Unpublish' : 'Publish'}
-              </button>
-            </div>
-  
-            {/* Features */}
-            <div>
-              <h4 className="font-semibold mb-2">Features:</h4>
-              {selectedPlan.features.length === 0 && (
-                <p className="text-gray-500">No features yet.</p>
-              )}
+      <div className="text-red-500">
+        Failed to load subscription plans.
+        <button className="underline ml-2" onClick={() => refetch()}>
+          Retry
+        </button>
+      </div>
+    );
+  }
+  if (!plans || plans.length === 0) {
+    return <div>No subscription plans found.</div>;
+  }
+
+  // Handlers
+  const handleAddFeature = async () => {
+    if (!selectedPlanId || !selectedFeatureId) return;
+    try {
+      await addFeature({ planId: selectedPlanId, featureId: selectedFeatureId }).unwrap();
+      setToastMessage('Feature added successfully!');
+      setToastShow(true);
+      setSelectedFeatureId('');
+    } catch (err) {
+      console.error('Failed to add feature:', err);
+      setToastMessage('Error adding feature.');
+      setToastShow(true);
+    }
+  };
+
+  const handleRemoveFeature = async (f: string) => {
+    if (!selectedPlanId) return;
+    try {
+      await removeFeature({ planId: selectedPlanId, feature: f }).unwrap();
+      setToastMessage('Feature removed successfully!');
+      setToastShow(true);
+    } catch (err) {
+      console.error('Failed to remove feature:', err);
+      setToastMessage('Error removing feature.');
+      setToastShow(true);
+    }
+  };
+
+  const togglePublish = async () => {
+    if (!selectedPlan) return;
+    try {
+      const newState = !selectedPlan.publishedAt;
+      await publishPlan({ planId: selectedPlan._id, publish: newState }).unwrap();
+      setToastMessage(newState ? 'Plan published!' : 'Plan unpublished.');
+      setToastShow(true);
+    } catch (err) {
+      console.error('Failed to toggle publish:', err);
+      setToastMessage('Error toggling publish state.');
+      setToastShow(true);
+    }
+  };
+
+  return (
+    <div className="space-y-4 bg-white p-4 rounded shadow">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Select a plan to manage features:
+        </label>
+        <select
+          className="border rounded p-2 w-full max-w-md"
+          value={selectedPlanId}
+          onChange={(e) => setSelectedPlanId(e.target.value)}
+        >
+          <option value="">-- Choose a plan --</option>
+          {plans.map((plan) => (
+            <option key={plan._id} value={plan._id}>
+              {plan.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {selectedPlan && (
+        <motion.div
+          className="border p-4 rounded space-y-4 shadow"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          <div>
+            <h3 className="text-lg font-bold text-gray-800">{selectedPlan.name}</h3>
+            <p className="text-sm text-gray-600">
+              Price: <strong>${selectedPlan.price.toFixed(2)}</strong>
+            </p>
+            <p className="text-sm text-gray-600">
+              Published: {selectedPlan.publishedAt ? 'Yes' : 'No'}
+            </p>
+            <button
+              className="mt-2 bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700"
+              onClick={togglePublish}
+            >
+              {selectedPlan.publishedAt ? 'Unpublish' : 'Publish'}
+            </button>
+          </div>
+
+          {/* Existing Features */}
+          <div>
+            <h4 className="font-semibold mb-2">Features:</h4>
+            {selectedPlan.features.length === 0 ? (
+              <p className="text-gray-500">No features yet.</p>
+            ) : (
               <ul className="space-y-1">
-                {selectedPlan.features.map((feat) => (
-                  <li key={feat} className="flex items-center justify-between">
-                    <span>{feat}</span>
+                {selectedPlan.features.map((featureObj) => (
+                  <li key={featureObj._id} className="flex items-center justify-between">
+                    <span>{featureObj.name}</span>
                     <button
                       className="text-red-500 hover:text-red-700"
-                      onClick={() => handleRemoveFeature(feat)}
+                      onClick={() => handleRemoveFeature(featureObj._id)}
                     >
                       <FaTrash />
                     </button>
                   </li>
                 ))}
-              </ul>
-  
-              {/* Add feature input */}
-              <div className="flex items-center mt-3">
-                <input
-                  className="border rounded p-2 flex-1"
-                  type="text"
-                  placeholder="Add new feature..."
-                  value={featureInput}
-                  onChange={(e) => setFeatureInput(e.target.value)}
-                />
-                <button
-                  className="ml-2 bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-                  onClick={handleAddFeature}
-                >
-                  <FaPlus />
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-  
-        {/* Toast for success/error messages */}
-        <Toast show={toastShow} message={toastMessage} onClose={closeToast} />
-      </div>
-    );
-  };
-  
 
+              </ul>
+            )}
+          </div>
+
+          {/* Add Feature from real list */}
+          <div>
+            <h4 className="font-semibold mb-2">Add a Feature</h4>
+            {allFeatures ? (
+              <select
+                className="border p-2 rounded w-full max-w-sm"
+                value={selectedFeatureId}
+                onChange={(e) => setSelectedFeatureId(e.target.value)}
+              >
+                <option value="">-- Choose a Feature --</option>
+                {allFeatures.map((ft) => (
+                  <option key={ft._id} value={ft._id}>
+                    {ft.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <p className="text-gray-500">Loading features...</p>
+            )}
+            <button
+              className="mt-2 bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+              onClick={handleAddFeature}
+            >
+              <FaPlus />
+            </button>
+          </div>
+        </motion.div>
+      )}
+
+      <Toast show={toastShow} message={toastMessage} onClose={closeToast} />
+    </div>
+  );
+};
+
+/******************************************************************************
+ * FeatureNameDisplay - looks up the feature name
+ *****************************************************************************/
+interface FeatureNameProps {
+  featureId: string;
+}
+const FeatureNameDisplay: React.FC<FeatureNameProps> = ({ featureId }) => {
+  const { data: allFeatures } = useListFeaturesQuery();
+  if (!allFeatures) return <span>{featureId}</span>;
+
+  const ft = allFeatures.find((f) => f._id === featureId);
+  return <span>{ft ? ft.name : featureId}</span>;
+};

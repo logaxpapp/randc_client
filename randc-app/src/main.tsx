@@ -1,24 +1,30 @@
-// src/main.tsx
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { Provider } from 'react-redux';
-import { store, persistor } from './app/store'; // <--- import persistor
-import { PersistGate } from 'redux-persist/integration/react'; // <--- import PersistGate
-import AppRouter from './router';
-import './global.css';
-import { ThemeProvider } from './context/ThemeProvider';
-import AppInitializer from './components/AppInitializer';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { Provider } from "react-redux";
+import { store, persistor } from "./app/store";
+import { PersistGate } from "redux-persist/integration/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import AppInitializer from "./components/AppInitializer";
+import AppRouter from "./router";
+import { ThemeProvider } from "./context/ThemeProvider";
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+import "./global.css";
+
+// Create your queryClient
+const queryClient = new QueryClient();
+
+// Mount your app inside #root
+ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <Provider store={store}>
-      {/* PersistGate delays rendering until state is rehydrated */}
       <PersistGate loading={null} persistor={persistor}>
-        <ThemeProvider>
-          <AppInitializer />
-          <AppRouter />
-        </ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider>
+            <AppInitializer />
+            <AppRouter />
+          </ThemeProvider>
+        </QueryClientProvider>
       </PersistGate>
     </Provider>
-  </React.StrictMode>,
+  </React.StrictMode>
 );

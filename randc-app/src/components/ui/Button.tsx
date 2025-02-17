@@ -6,7 +6,7 @@ import clsx from 'clsx';
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
   fullWidth?: boolean;
-  variant?: 'primary' | 'secondary' | 'tertiary' | 'danger' | 'link';
+  variant?: 'primary' | 'secondary' | 'tertiary' | 'danger' | 'link' | 'ghost';
   icon?: React.ReactNode; // Optional icon
 }
 
@@ -22,6 +22,8 @@ const variantClasses: Record<NonNullable<ButtonProps['variant']>, string> = {
     'bg-red-600 text-white shadow-sm hover:bg-red-700 hover:shadow-md',
   link:
     'text-blue-600 bg-transparent hover:underline border border-yellow-500 hover:border-yellow-600',
+  ghost:
+    'bg-transparent text-gray-600 border border-gray-600 hover:text-gray-700 hover:border-gray-700',
 };
 
 const Button: React.FC<ButtonProps> = ({

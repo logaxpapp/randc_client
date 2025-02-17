@@ -108,256 +108,296 @@ const GlobalSettingsManager: React.FC = () => {
   //   MAIN COMPONENT
   // =======================
   return (
-    <motion.div
-      className="mx-auto my-8 max-w-4xl p-6 bg-white rounded shadow relative"
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-    >
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <FaCog className="text-blue-600" />
-          Global Settings
-        </h1>
+    <section className="relative w-full min-h-screen overflow-hidden text-gray-800">
+      {/* --- Top Wave Divider (Rotated) --- */}
+
+      
+      <div className="absolute top-0 left-0 w-full rotate-180 leading-none z-0">
+        <svg
+          className="block w-full h-20 md:h-32 lg:h-48"
+          viewBox="0 0 1440 320"
+          preserveAspectRatio="none"
+        >
+          <path
+            fill="#3B82F6"
+            fillOpacity="1"
+            d="M0,224L48,224C96,224,192,224,288,197.3C384,171,480,117,576,96C672,75,768,85,864,112C960,139,1056,181,1152,170.7C1248,160,1344,96,1392,64L1440,32L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+          />
+        </svg>
       </div>
 
-      {/* Success / Error feedback */}
-      {successMsg && (
-        <motion.div
-          className="mb-4 p-3 bg-green-100 text-green-700 border border-green-200 rounded"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
-        >
-          {successMsg}
-        </motion.div>
-      )}
-      {(errorMsg || isUpdateError) && (
-        <motion.div
-          className="mb-4 p-3 bg-red-100 text-red-700 border border-red-200 rounded"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
-        >
-          {errorMsg || 'Error updating settings.'}
-        </motion.div>
-      )}
+      {/* Background Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-200 via-white to-lime-100 z-0" />
 
-      <form onSubmit={formik.handleSubmit} className="space-y-8">
-        {/* ============== SLOT GENERATION SECTION ============== */}
-        <div className="p-4 border rounded-lg bg-gray-50">
-          <div className="flex items-center mb-3 gap-2">
-            <FaHouseUser className="text-gray-500" />
-            <h2 className="text-lg font-semibold text-gray-800">
-              Slot Generation Settings
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* slotGenMinDays */}
-            <div>
-              <label
-                className="block font-medium text-sm text-gray-700 mb-1"
-                htmlFor="slotGenMinDays"
-              >
-                Min Days for Slot Generation
-              </label>
-              <input
-                type="number"
-                id="slotGenMinDays"
-                {...formik.getFieldProps('slotGenMinDays')}
-                className={clsx(
-                  'w-full border rounded p-2 focus:outline-none',
-                  formik.touched.slotGenMinDays && formik.errors.slotGenMinDays
-                    ? 'border-red-500'
-                    : 'border-gray-300'
-                )}
-              />
-              {formik.touched.slotGenMinDays && formik.errors.slotGenMinDays && (
-                <p className="text-red-500 text-sm mt-1">
-                  {formik.errors.slotGenMinDays}
-                </p>
-              )}
-            </div>
-
-            {/* slotGenMaxDays */}
-            <div>
-              <label
-                className="block font-medium text-sm text-gray-700 mb-1"
-                htmlFor="slotGenMaxDays"
-              >
-                Max Days for Slot Generation
-              </label>
-              <input
-                type="number"
-                id="slotGenMaxDays"
-                {...formik.getFieldProps('slotGenMaxDays')}
-                className={clsx(
-                  'w-full border rounded p-2 focus:outline-none',
-                  formik.touched.slotGenMaxDays && formik.errors.slotGenMaxDays
-                    ? 'border-red-500'
-                    : 'border-gray-300'
-                )}
-              />
-              {formik.touched.slotGenMaxDays && formik.errors.slotGenMaxDays && (
-                <p className="text-red-500 text-sm mt-1">
-                  {formik.errors.slotGenMaxDays}
-                </p>
-              )}
-            </div>
-          </div>
+      {/* Main Content Container */}
+      <motion.div
+        className="relative z-10 mx-auto my-8 max-w-4xl p-6 bg-white rounded shadow"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <FaCog className="text-blue-600" />
+            Global Settings
+          </h1>
         </div>
 
-        {/* ============== TENANT SETTINGS SECTION ============== */}
-        <div className="p-4 border rounded-lg bg-gray-50">
-          <div className="flex items-center mb-3 gap-2">
-            <FaUsers className="text-gray-500" />
-            <h2 className="text-lg font-semibold text-gray-800">
-              Tenant Settings
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* allowTenantRegistration */}
-            <div className="flex items-center space-x-3">
-              <input
-                type="checkbox"
-                id="allowTenantRegistration"
-                className="h-5 w-5 border-gray-300"
-                checked={formik.values.allowTenantRegistration}
-                onChange={(e) =>
-                  formik.setFieldValue('allowTenantRegistration', e.target.checked)
-                }
-              />
-              <label
-                htmlFor="allowTenantRegistration"
-                className="text-sm font-medium text-gray-700"
-              >
-                Allow Tenant Registration
-              </label>
-            </div>
-
-            {/* maxUsersPerTenant */}
-            <div>
-              <label
-                className="block font-medium text-sm text-gray-700 mb-1"
-                htmlFor="maxUsersPerTenant"
-              >
-                Max Users Per Tenant
-              </label>
-              <input
-                type="number"
-                id="maxUsersPerTenant"
-                {...formik.getFieldProps('maxUsersPerTenant')}
-                className={clsx(
-                  'w-full border rounded p-2 focus:outline-none',
-                  formik.touched.maxUsersPerTenant && formik.errors.maxUsersPerTenant
-                    ? 'border-red-500'
-                    : 'border-gray-300'
-                )}
-              />
-              {formik.touched.maxUsersPerTenant && formik.errors.maxUsersPerTenant && (
-                <p className="text-red-500 text-sm mt-1">
-                  {formik.errors.maxUsersPerTenant}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* ============== USER SETTINGS SECTION ============== */}
-        <div className="p-4 border rounded-lg bg-gray-50">
-          <div className="flex items-center mb-3 gap-2">
-            <FaKey className="text-gray-500" />
-            <h2 className="text-lg font-semibold text-gray-800">
-              User Settings
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* userPasswordMinLength */}
-            <div>
-              <label
-                className="block font-medium text-sm text-gray-700 mb-1"
-                htmlFor="userPasswordMinLength"
-              >
-                User Password Min Length
-              </label>
-              <input
-                type="number"
-                id="userPasswordMinLength"
-                {...formik.getFieldProps('userPasswordMinLength')}
-                className={clsx(
-                  'w-full border rounded p-2 focus:outline-none',
-                  formik.touched.userPasswordMinLength && formik.errors.userPasswordMinLength
-                    ? 'border-red-500'
-                    : 'border-gray-300'
-                )}
-              />
-              {formik.touched.userPasswordMinLength && formik.errors.userPasswordMinLength && (
-                <p className="text-red-500 text-sm mt-1">
-                  {formik.errors.userPasswordMinLength}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* ============== REVIEW AUTO-PUBLISH SECTION ============== */}
-        <div className="p-4 border rounded-lg bg-gray-50">
-          <div className="flex items-center mb-3 gap-2">
-            <FaStar className="text-gray-500" />
-            <h2 className="text-lg font-semibold text-gray-800">
-              Review Settings
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* reviewAutoPublishThreshold */}
-            <div>
-              <label
-                className="block font-medium text-sm text-gray-700 mb-1"
-                htmlFor="reviewAutoPublishThreshold"
-              >
-                Review Auto-Publish Threshold
-              </label>
-              <input
-                type="number"
-                id="reviewAutoPublishThreshold"
-                {...formik.getFieldProps('reviewAutoPublishThreshold')}
-                className={clsx(
-                  'w-full border rounded p-2 focus:outline-none',
-                  formik.touched.reviewAutoPublishThreshold && formik.errors.reviewAutoPublishThreshold
-                    ? 'border-red-500'
-                    : 'border-gray-300'
-                )}
-                min={1}
-                max={5}
-                step={1}
-              />
-              {formik.touched.reviewAutoPublishThreshold &&
-                formik.errors.reviewAutoPublishThreshold && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {formik.errors.reviewAutoPublishThreshold}
-                  </p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* ============== SUBMIT BUTTON ============== */}
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            className="flex items-center space-x-2 bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 disabled:opacity-60"
-            disabled={isUpdating}
+        {/* Success / Error feedback */}
+        {successMsg && (
+          <motion.div
+            className="mb-4 p-3 bg-green-100 text-green-700 border border-green-200 rounded"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
           >
-            {isUpdating && <FaSpinner className="animate-spin" />}
-            <span>Save Settings</span>
-          </button>
-        </div>
-      </form>
-    </motion.div>
+            {successMsg}
+          </motion.div>
+        )}
+        {(errorMsg || isUpdateError) && (
+          <motion.div
+            className="mb-4 p-3 bg-red-100 text-red-700 border border-red-200 rounded"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            {errorMsg || 'Error updating settings.'}
+          </motion.div>
+        )}
+
+        {/* Form */}
+        <form onSubmit={formik.handleSubmit} className="space-y-8">
+          {/* ============== SLOT GENERATION SECTION ============== */}
+          <div className="p-4 border rounded-lg bg-gray-50">
+            <div className="flex items-center mb-3 gap-2">
+              <FaHouseUser className="text-gray-500" />
+              <h2 className="text-lg font-semibold text-gray-800">
+                Slot Generation Settings
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* slotGenMinDays */}
+              <div>
+                <label
+                  className="block font-medium text-sm text-gray-700 mb-1"
+                  htmlFor="slotGenMinDays"
+                >
+                  Min Days for Slot Generation
+                </label>
+                <input
+                  type="number"
+                  id="slotGenMinDays"
+                  {...formik.getFieldProps('slotGenMinDays')}
+                  className={clsx(
+                    'w-full border rounded p-2 focus:outline-none',
+                    formik.touched.slotGenMinDays && formik.errors.slotGenMinDays
+                      ? 'border-red-500'
+                      : 'border-gray-300'
+                  )}
+                />
+                {formik.touched.slotGenMinDays && formik.errors.slotGenMinDays && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {formik.errors.slotGenMinDays}
+                  </p>
+                )}
+              </div>
+
+              {/* slotGenMaxDays */}
+              <div>
+                <label
+                  className="block font-medium text-sm text-gray-700 mb-1"
+                  htmlFor="slotGenMaxDays"
+                >
+                  Max Days for Slot Generation
+                </label>
+                <input
+                  type="number"
+                  id="slotGenMaxDays"
+                  {...formik.getFieldProps('slotGenMaxDays')}
+                  className={clsx(
+                    'w-full border rounded p-2 focus:outline-none',
+                    formik.touched.slotGenMaxDays && formik.errors.slotGenMaxDays
+                      ? 'border-red-500'
+                      : 'border-gray-300'
+                  )}
+                />
+                {formik.touched.slotGenMaxDays && formik.errors.slotGenMaxDays && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {formik.errors.slotGenMaxDays}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ============== TENANT SETTINGS SECTION ============== */}
+          <div className="p-4 border rounded-lg bg-gray-50">
+            <div className="flex items-center mb-3 gap-2">
+              <FaUsers className="text-gray-500" />
+              <h2 className="text-lg font-semibold text-gray-800">
+                Tenant Settings
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* allowTenantRegistration */}
+              <div className="flex items-center space-x-3">
+                <input
+                  type="checkbox"
+                  id="allowTenantRegistration"
+                  className="h-5 w-5 border-gray-300"
+                  checked={formik.values.allowTenantRegistration}
+                  onChange={(e) =>
+                    formik.setFieldValue('allowTenantRegistration', e.target.checked)
+                  }
+                />
+                <label
+                  htmlFor="allowTenantRegistration"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Allow Tenant Registration
+                </label>
+              </div>
+
+              {/* maxUsersPerTenant */}
+              <div>
+                <label
+                  className="block font-medium text-sm text-gray-700 mb-1"
+                  htmlFor="maxUsersPerTenant"
+                >
+                  Max Users Per Tenant
+                </label>
+                <input
+                  type="number"
+                  id="maxUsersPerTenant"
+                  {...formik.getFieldProps('maxUsersPerTenant')}
+                  className={clsx(
+                    'w-full border rounded p-2 focus:outline-none',
+                    formik.touched.maxUsersPerTenant && formik.errors.maxUsersPerTenant
+                      ? 'border-red-500'
+                      : 'border-gray-300'
+                  )}
+                />
+                {formik.touched.maxUsersPerTenant && formik.errors.maxUsersPerTenant && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {formik.errors.maxUsersPerTenant}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ============== USER SETTINGS SECTION ============== */}
+          <div className="p-4 border rounded-lg bg-gray-50">
+            <div className="flex items-center mb-3 gap-2">
+              <FaKey className="text-gray-500" />
+              <h2 className="text-lg font-semibold text-gray-800">
+                User Settings
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* userPasswordMinLength */}
+              <div>
+                <label
+                  className="block font-medium text-sm text-gray-700 mb-1"
+                  htmlFor="userPasswordMinLength"
+                >
+                  User Password Min Length
+                </label>
+                <input
+                  type="number"
+                  id="userPasswordMinLength"
+                  {...formik.getFieldProps('userPasswordMinLength')}
+                  className={clsx(
+                    'w-full border rounded p-2 focus:outline-none',
+                    formik.touched.userPasswordMinLength && formik.errors.userPasswordMinLength
+                      ? 'border-red-500'
+                      : 'border-gray-300'
+                  )}
+                />
+                {formik.touched.userPasswordMinLength &&
+                  formik.errors.userPasswordMinLength && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {formik.errors.userPasswordMinLength}
+                    </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ============== REVIEW AUTO-PUBLISH SECTION ============== */}
+          <div className="p-4 border rounded-lg bg-gray-50">
+            <div className="flex items-center mb-3 gap-2">
+              <FaStar className="text-gray-500" />
+              <h2 className="text-lg font-semibold text-gray-800">
+                Review Settings
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* reviewAutoPublishThreshold */}
+              <div>
+                <label
+                  className="block font-medium text-sm text-gray-700 mb-1"
+                  htmlFor="reviewAutoPublishThreshold"
+                >
+                  Review Auto-Publish Threshold
+                </label>
+                <input
+                  type="number"
+                  id="reviewAutoPublishThreshold"
+                  {...formik.getFieldProps('reviewAutoPublishThreshold')}
+                  className={clsx(
+                    'w-full border rounded p-2 focus:outline-none',
+                    formik.touched.reviewAutoPublishThreshold && formik.errors.reviewAutoPublishThreshold
+                      ? 'border-red-500'
+                      : 'border-gray-300'
+                  )}
+                  min={1}
+                  max={5}
+                  step={1}
+                />
+                {formik.touched.reviewAutoPublishThreshold &&
+                  formik.errors.reviewAutoPublishThreshold && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {formik.errors.reviewAutoPublishThreshold}
+                    </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ============== SUBMIT BUTTON ============== */}
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              className="flex items-center space-x-2 bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 disabled:opacity-60"
+              disabled={isUpdating}
+            >
+              {isUpdating && <FaSpinner className="animate-spin" />}
+              <span>Save Settings</span>
+            </button>
+          </div>
+        </form>
+      </motion.div>
+
+      {/* --- Bottom Wave Divider --- */}
+      <div className="absolute bottom-0 w-full leading-none z-0">
+        <svg
+          className="block w-full h-20 md:h-32 lg:h-48"
+          viewBox="0 0 1440 320"
+          preserveAspectRatio="none"
+        >
+          <path
+            fill="#3B82F6"
+            fillOpacity="1"
+            d="M0,64L48,64C96,64,192,64,288,101.3C384,139,480,213,576,224C672,235,768,181,864,165.3C960,149,1056,171,1152,186.7C1248,203,1344,213,1392,218.7L1440,224L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"
+          />
+        </svg>
+      </div>
+    </section>
   );
 };
 

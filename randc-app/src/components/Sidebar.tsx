@@ -8,14 +8,12 @@ import {
   FaToolbox,
   FaAngleDoubleLeft,
   FaAngleDoubleRight,
-  FaInfoCircle,   // New icons
 } from 'react-icons/fa';
 
-import Logo from '../assets/images/logo.png'; // Adjust path if necessary
 import { getNavItems, NavItem } from './NavItems';
 
 interface SidebarProps {
-  role: 'admin' | 'cleaner' | 'user';
+  role: 'admin' | 'cleaner' | 'seeker';
   
 }
 
@@ -31,19 +29,19 @@ const SidebarHeader: React.FC<{
   return (
     <div
       className={clsx(
-        'flex items-center justify-between p-3',
-        'bg-indigo-700 text-white'
+        'flex items-center justify-between p-4',
+        'bg-white text-gray-800 border-b border-gray-400',
       )}
     >
       {!isCollapsed && (
         <NavLink to="/" className="flex items-center space-x-2">
-          <img src={Logo} alt="Logo" className="h-8 w-8" />
-          <span className="text-xl font-bold tracking-wide">R&C</span>
+        
+          <span className="text-md font-extrabold text-lime-600 border-b-4 border-amber-400 inline-block pb-1 rca">R&C</span>
         </NavLink>
       )}
       <button
         onClick={toggleSidebar}
-        className="p-2 rounded hover:bg-indigo-600 focus:outline-none"
+        className="p-2 rounded hover:bg-gray-100 hover focus:outline-none"
         aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       >
         {isCollapsed ? (
@@ -72,8 +70,8 @@ const SubMenuItem: React.FC<{
         to={subItem.to}
         className={({ isActive }) =>
           clsx(
-            'flex items-center p-2 rounded transition-colors text-sm hover:bg-indigo-700',
-            isActive && 'bg-indigo-800'
+            'flex items-center p-2 rounded transition-colors text-sm hover:bg-gray-200 hover:text-gray-900',
+            isActive && 'bg-blue-9'
           )
         }
         data-tip={isCollapsed ? subItem.label : undefined}
@@ -115,10 +113,10 @@ const SidebarItem: React.FC<{
           to={item.to}
           className={({ isActive }) =>
             clsx(
-              'flex items-center p-2 rounded transition-colors hover:bg-indigo-700',
+              'flex items-center p-2 rounded transition-colors hover:bg-gray-200 hover:text-gray-900',
               // if item.to === '#', style as disabled or not clickable
-              item.to === '#' && 'cursor-default pointer-events-none bg-indigo-600',
-              isActive && item.to !== '#' && 'bg-indigo-800'
+              item.to === '#' && 'cursor-default pointer-events-none bg-gray-100',
+              isActive && item.to !== '#' && 'bg--900'
             )
           }
           data-tip={isCollapsed ? item.label : undefined}
@@ -130,7 +128,7 @@ const SidebarItem: React.FC<{
 
         {/* Tooltip (collapsed mode) */}
         {isCollapsed && (
-          <Tooltip id={`tooltip-${index}`} place="right" className="z-50" />
+          <Tooltip id={`tooltip-${index}`} place="right" className="z-50 " />
         )}
 
         {/* Submenu Toggle Button */}
@@ -139,8 +137,8 @@ const SidebarItem: React.FC<{
             <button
               onClick={() => onToggle(index)}
               className={clsx(
-                'flex items-center w-full p-2 mt-1 rounded transition-colors hover:bg-indigo-700',
-                isOpen && 'bg-indigo-800'
+                'flex items-center w-full p-2 mt-1 rounded transition-colors hover:bg-gray-200 hover:text-gray-900',
+                isOpen && 'bg-gray-100'
               )}
               aria-haspopup="true"
               aria-expanded={isOpen}
@@ -192,7 +190,7 @@ const SidebarItem: React.FC<{
  * ------------------------------------------------------------------------- */
 const SidebarFooter: React.FC<{ isCollapsed: boolean }> = ({ isCollapsed }) => {
   return (
-    <div className="p-4 border-t border-red-800">
+    <div className="p-4 border-t border-red-800 bg-gray-200 text-red-600">
       {/* Could place logout button, version info, or settings here */}
       {!isCollapsed ? (
         <div className="flex items-center space-x-2 text-sm font-medium">
@@ -266,8 +264,8 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
     <aside
       ref={sidebarRef}
       className={clsx(
-        'bg-indigo-900 text-white h-auto transition-all duration-300 flex flex-col justify-between shadow-lg',
-        isCollapsed ? 'w-20' : 'w-64'
+        'bg-white text-gray-500 h-auto transition-all duration-300 flex flex-col justify-between shadow-md',
+        isCollapsed ? 'w-20' : 'w-56'
       )}
     >
       {/* TOP: Logo + Collapse Button */}
@@ -275,21 +273,15 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
 
       {/* VITAL MESSAGE (Example placeholder for a pinned/vital message) */}
       {!isCollapsed && (
-        <div className="bg-indigo-800 mx-2 mt-2 p-2 rounded">
-          <div className="flex items-center space-x-2 text-sm">
-            <FaInfoCircle className="text-sky-400" />
-            <span className="font-semibold">Vital Notice:</span>
-          </div>
-          <p className="text-xs mt-1 text-slate-100">
-            {vitalMessage.title} {vitalMessage.message}
-
-          </p>
+        <div className="p-4 text-gray-800 bg-gray-200  border-l-4 border-red-500">
+          <h3 className="font-semibold">{vitalMessage.title}</h3>
+          <p>{vitalMessage.message}</p>
         </div>
       )}
 
       {/* NAV ITEMS */}
       <nav className="mt-4 flex-1 overflow-y-auto">
-        <ul className="space-y-2">
+        <ul className="space-y-2 text-sm">
           {navItems.map((item, index) => (
             <SidebarItem
               key={item.to}

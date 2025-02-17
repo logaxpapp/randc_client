@@ -15,5 +15,6 @@ export interface AddressFormValues {
     email?: string;
     website?: string;
     address: AddressFormValues;
+    bannerImages: string[];
   }
   

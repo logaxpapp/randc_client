@@ -12,7 +12,6 @@ import { MdOutlineDomain } from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 
-
 import {
   useCreateTenantMutation,
 } from '../../features/tenant/tenantApi';
@@ -29,86 +28,100 @@ import Toast from '../../components/ui/Toast';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 
+// --- Avatars (example images; adjust paths as needed) ---
 import FaeAvatar from '../../assets/images/fae.svg';
 import KaiAvatar from '../../assets/images/Naya.svg';
 import ZaraAvatar from '../../assets/images/Fago.svg';
+import RileyAvatar from '../../assets/images/Fago.svg';
 
 /**
  * Steps for multi-step sign-up flow:
- *  1) TENANT_CREATION
- *  2) REQUEST_CODE
- *  3) VERIFY_CODE
- *  4) USER_CREATION
- *  5) SUMMARY
+ *  1) TENANT_GENERAL
+ *  2) TENANT_ADDRESS
+ *  3) REQUEST_CODE
+ *  4) VERIFY_CODE
+ *  5) USER_CREATION
+ *  6) SUMMARY
  */
 enum Step {
-  TENANT_CREATION = 1,
+  TENANT_GENERAL = 1,
+  TENANT_ADDRESS,
   REQUEST_CODE,
   VERIFY_CODE,
   USER_CREATION,
   SUMMARY,
 }
 
-const faeMessages: Record<Step, string> = {
-    [Step.TENANT_CREATION]:
-      "Tenant name must be unique. Let's set up your new company so you can get started quickly!",
-    [Step.REQUEST_CODE]:
-      "You're doing awesome! Next, let's verify your email. I’ll take over from here!",
-    [Step.VERIFY_CODE]:
-      "We just emailed you a code! Enter those 6 digits to confirm your email. I’m with you 'til the finish line!",
-    [Step.USER_CREATION]:
-      "Great job verifying your email! Now let’s create your owner account. Almost there!",
-    [Step.SUMMARY]:
-      "Perfect! Tenant creation complete and user is set up. You’re all set to explore your new platform!",
-  };
-  
-  // **Assistant** configurations for each step: avatar, name, background classes, etc.
-  const assistantConfigs: Record<
-    Step,
-    {
-      name: string;
-      avatar: string;
-      bgClasses: string;    // background + text colors
-      headingColor: string; // heading text color
-      messageColor: string; // main message color
-    }
-  > = {
-    [Step.TENANT_CREATION]: {
-      name: 'Fae',
-      avatar: FaeAvatar,
-      bgClasses: 'bg-gray-950 text-white', 
-      headingColor: 'text-yellow-300',
-      messageColor: 'text-white',
-    },
-    [Step.REQUEST_CODE]: {
-      name: 'Kai',
-      avatar: KaiAvatar,
-      bgClasses: 'bg-purple-900 text-white',
-      headingColor: 'text-green-300',
-      messageColor: 'text-white',
-    },
-    [Step.VERIFY_CODE]: {
-      name: 'Zara',
-      avatar: ZaraAvatar,
-      bgClasses: 'bg-blue-800 text-white',
-      headingColor: 'text-pink-300',
-      messageColor: 'text-white',
-    },
-    [Step.USER_CREATION]: {
-      name: 'Fae',
-      avatar: FaeAvatar,
-      bgClasses: 'bg-green-900 text-white',
-      headingColor: 'text-yellow-300',
-      messageColor: 'text-white',
-    },
-    [Step.SUMMARY]: {
-      name: 'Kai',
-      avatar: KaiAvatar,
-      bgClasses: 'bg-black text-white',
-      headingColor: 'text-purple-300',
-      messageColor: 'text-white',
-    },
-  };
+/** Assistant text shown at each step */
+const assistantMessages: Record<Step, string> = {
+  [Step.TENANT_GENERAL]:
+    "Tenant name must be unique. Let's set up your new company so you can get started quickly!",
+  [Step.TENANT_ADDRESS]:
+    "Hi, I'm Riley! Let's set up your company's address details to complete the registration.",
+  [Step.REQUEST_CODE]:
+    "You're doing awesome! Next, let's verify your email. I'll take over from here!",
+  [Step.VERIFY_CODE]:
+    "We just emailed you a code! Enter those 6 digits to confirm your email. I’m with you 'til the finish line!",
+  [Step.USER_CREATION]:
+    "Great job verifying your email! Now let’s create your owner account. Almost there!",
+  [Step.SUMMARY]:
+    "Perfect! Tenant creation complete and user is set up. You’re all set to explore your new platform!",
+};
+
+/** Assistant configurations for each step: avatar, name, background style, etc. */
+const assistantConfigs: Record<
+  Step,
+  {
+    name: string;
+    avatar: string;
+    bgClasses: string;    // background + text colors
+    headingColor: string; // heading text color
+    messageColor: string; // main message color
+  }
+> = {
+  [Step.TENANT_GENERAL]: {
+    name: 'Fae',
+    avatar: FaeAvatar,
+    bgClasses: 'bg-gray-950 text-white',
+    headingColor: 'text-yellow-300',
+    messageColor: 'text-white',
+  },
+  [Step.TENANT_ADDRESS]: {
+    name: 'Riley',
+    avatar: RileyAvatar,
+    bgClasses: 'bg-pink-900 text-white',
+    headingColor: 'text-teal-300',
+    messageColor: 'text-white',
+  },
+  [Step.REQUEST_CODE]: {
+    name: 'Kai',
+    avatar: KaiAvatar,
+    bgClasses: 'bg-purple-900 text-white',
+    headingColor: 'text-green-300',
+    messageColor: 'text-white',
+  },
+  [Step.VERIFY_CODE]: {
+    name: 'Zara',
+    avatar: ZaraAvatar,
+    bgClasses: 'bg-blue-800 text-white',
+    headingColor: 'text-pink-300',
+    messageColor: 'text-white',
+  },
+  [Step.USER_CREATION]: {
+    name: 'Fae',
+    avatar: FaeAvatar,
+    bgClasses: 'bg-green-900 text-white',
+    headingColor: 'text-yellow-300',
+    messageColor: 'text-white',
+  },
+  [Step.SUMMARY]: {
+    name: 'Kai',
+    avatar: KaiAvatar,
+    bgClasses: 'bg-black text-white',
+    headingColor: 'text-purple-300',
+    messageColor: 'text-white',
+  },
+};
 
 const CompanySignUp: React.FC = () => {
   // ----------------------------------------------------------------
@@ -119,12 +132,11 @@ const CompanySignUp: React.FC = () => {
     useRequestEmailVerificationMutation();
   const [verifyEmailCode, { isLoading: isVerifyingCode }] = useVerifyEmailCodeMutation();
   const [registerUserOnly, { isLoading: isRegisteringUser }] = useRegisterUserOnlyMutation();
-  
 
   // ----------------------------------------------------------------
   //                 Step State & Data
   // ----------------------------------------------------------------
-  const [currentStep, setCurrentStep] = useState<Step>(Step.TENANT_CREATION);
+  const [currentStep, setCurrentStep] = useState<Step>(Step.TENANT_GENERAL);
 
   // Track whether each step is “done” so we can skip re-submitting
   const [isTenantCreated, setIsTenantCreated] = useState(false);
@@ -135,13 +147,28 @@ const CompanySignUp: React.FC = () => {
   // Tenant data
   const [tenantData, setTenantData] = useState<{
     tenantName: string;
-    domain?: string;
-    aboutUs?: string;
-    _id?: string; // from backend
+    domain: string;
+    aboutUs: string;
+    address: {
+      street: string;
+      city: string;
+      state: string;
+      postalCode: string;
+      country: string;
+    };
+    _id?: string;
   }>({
     tenantName: '',
     domain: '',
     aboutUs: '',
+    address: {
+      street: '',
+      city: '',
+      state: '',
+      postalCode: '',
+      country: '',
+    },
+    _id: '',
   });
 
   // Email data
@@ -221,13 +248,25 @@ const CompanySignUp: React.FC = () => {
   }, [currentStep]);
 
   // ----------------------------------------------------------------
-  //                 Yup Validation
+  //                 Yup Validation Schemas
   // ----------------------------------------------------------------
-  const TenantSchema = Yup.object().shape({
+  // Step 1: General tenant info
+  const TenantGeneralSchema = Yup.object().shape({
     tenantName: Yup.string().required('Company Name is required'),
     domain: Yup.string().nullable(),
     aboutUs: Yup.string().nullable(),
   });
+
+  // Step 2: Tenant address
+  const TenantAddressSchema = Yup.object().shape({
+    street: Yup.string().required('Street is required'),
+    city: Yup.string().required('City is required'),
+    state: Yup.string().required('State is required'),
+    postalCode: Yup.string().required('Postal code is required'),
+    country: Yup.string().required('Country is required'),
+  });
+
+  // Step 5: User creation
   const UserSchema = Yup.object().shape({
     firstName: Yup.string().required('First Name is required'),
     lastName: Yup.string().required('Last Name is required'),
@@ -241,39 +280,72 @@ const CompanySignUp: React.FC = () => {
   });
 
   // ----------------------------------------------------------------
-  //                 Step 1) Tenant creation
+  //     Step 1) Tenant (General Info) - just store in state
   // ----------------------------------------------------------------
-  const handleTenantSubmit = async (vals: {
+  const handleTenantGeneralSubmit = async (vals: {
     tenantName: string;
     domain?: string;
     aboutUs?: string;
   }) => {
-    // If tenant creation is already done, skip re-submission
+    // Save into tenantData state, then move to next step
+    setTenantData((prev) => ({
+      ...prev,
+      tenantName: vals.tenantName,
+      domain: vals.domain || '',
+      aboutUs: vals.aboutUs || '',
+    }));
+    nextStep();
+  };
+
+  // ----------------------------------------------------------------
+  //     Step 2) Tenant (Address) - createTenant API call here
+  // ----------------------------------------------------------------
+  const handleTenantAddressSubmit = async (vals: {
+    street: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+  }) => {
+    // If already created, skip
     if (isTenantCreated && tenantData._id) {
       nextStep();
       return;
     }
 
-    // Otherwise, proceed with creation
-    setTenantData({
+    // Combine new address data into tenantData
+    const updatedTenant = {
       ...tenantData,
-      ...vals,
-    });
-    try {
-      await new Promise((res) => setTimeout(res, 500)); // short delay for UX
+      address: {
+        street: vals.street,
+        city: vals.city,
+        state: vals.state,
+        postalCode: vals.postalCode,
+        country: vals.country,
+      },
+    };
 
+    setTenantData(updatedTenant);
+
+    try {
+      // Simulate short delay
+      await new Promise((res) => setTimeout(res, 500));
+
+      // Now create tenant
       const result = await createTenant({
-        name: vals.tenantName,
-        domain: vals.domain,
-        aboutUs: vals.aboutUs,
+        name: updatedTenant.tenantName,
+        domain: updatedTenant.domain,
+        aboutUs: updatedTenant.aboutUs,
+        address: updatedTenant.address,
       }).unwrap();
 
+      // Save _id
       setTenantData((prev) => ({
         ...prev,
         _id: result.data?._id || result._id,
       }));
 
-      setIsTenantCreated(true); // mark step complete
+      setIsTenantCreated(true);
       showToast('Tenant created successfully!', 'success');
       nextStep();
     } catch (err: any) {
@@ -282,7 +354,7 @@ const CompanySignUp: React.FC = () => {
   };
 
   // ----------------------------------------------------------------
-  //                 Step 2) Request code
+  //     Step 3) Request Email Code
   // ----------------------------------------------------------------
   const handleRequestCode = async (emailVal: string) => {
     // If we've already requested code, skip
@@ -297,7 +369,7 @@ const CompanySignUp: React.FC = () => {
 
       await requestEmailVerification({ email: emailVal }).unwrap();
 
-      setIsCodeRequested(true); // mark step complete
+      setIsCodeRequested(true);
       showToast('Verification code sent to your email!', 'success');
       nextStep();
       startResendCooldown();
@@ -332,10 +404,9 @@ const CompanySignUp: React.FC = () => {
   };
 
   // ----------------------------------------------------------------
-  //                 Step 3) Verify code
+  //     Step 4) Verify Code
   // ----------------------------------------------------------------
   const handleVerifyCode = async (theCode: string) => {
-    // If already verified, skip
     if (isEmailVerified) {
       nextStep();
       return;
@@ -357,16 +428,14 @@ const CompanySignUp: React.FC = () => {
   };
 
   // ----------------------------------------------------------------
-  //                 Step 4) Create user
+  //     Step 5) Create Owner User
   // ----------------------------------------------------------------
   const handleUserSubmit = async (vals: typeof userData) => {
-    // If user creation is done, skip
     if (isUserCreated) {
       nextStep();
       return;
     }
 
-    // Otherwise create user
     setUserData(vals);
     try {
       await new Promise((res) => setTimeout(res, 500));
@@ -389,7 +458,7 @@ const CompanySignUp: React.FC = () => {
   };
 
   // ----------------------------------------------------------------
-  //                 OTP Helper
+  //     OTP Helpers
   // ----------------------------------------------------------------
   const handleDigitChange = (value: string, idx: number) => {
     const digit = value.replace(/\D/, '').slice(-1);
@@ -417,41 +486,44 @@ const CompanySignUp: React.FC = () => {
   };
 
   // ----------------------------------------------------------------
-  //                 Animations
+  //     Animations
   // ----------------------------------------------------------------
-  // The same animations, containerVariants, etc.
   const containerVariants = {
     hidden: { opacity: 0, x: 50 },
-    show:   { opacity: 1, x: 0 },
-    exit:   { opacity: 0, x: -50 },
+    show: { opacity: 1, x: 0 },
+    exit: { opacity: 0, x: -50 },
   };
 
-  // Pick which config to use based on the current step
+  // Choose config for the current step
   const { name, avatar, bgClasses, headingColor, messageColor } = assistantConfigs[currentStep];
-  const faeMessage = faeMessages[currentStep];
+  const assistantMessage = assistantMessages[currentStep];
 
   // ----------------------------------------------------------------
-  //                 Render Each Step
+  //     Render Each Step
   // ----------------------------------------------------------------
   const renderStep = () => {
     switch (currentStep) {
-      case Step.TENANT_CREATION:
+      /** STEP 1: TENANT_GENERAL */
+      case Step.TENANT_GENERAL:
         return (
           <motion.div
-            key="tenant-creation"
+            key="tenant-general"
             variants={containerVariants}
             initial="hidden"
             animate="show"
             exit="exit"
           >
             <h2 className="text-xl font-semibold flex items-center gap-2 mb-4">
-              <FaBuilding /> Tenant Creation
+              <FaBuilding /> Tenant: General Info
             </h2>
             <Formik
-              enableReinitialize
-              initialValues={tenantData}
-              validationSchema={TenantSchema}
-              onSubmit={handleTenantSubmit}
+              initialValues={{
+                tenantName: tenantData.tenantName,
+                domain: tenantData.domain,
+                aboutUs: tenantData.aboutUs,
+              }}
+              validationSchema={TenantGeneralSchema}
+              onSubmit={handleTenantGeneralSubmit}
             >
               {({ isSubmitting }) => (
                 <Form className="space-y-4">
@@ -462,8 +534,6 @@ const CompanySignUp: React.FC = () => {
                       type="text"
                       className="w-full border border-gray-300 rounded p-2"
                       placeholder="e.g. Awesome Inc."
-                      // Optionally disable if we don't want the user to edit
-                      disabled={isTenantCreated}
                     />
                     <ErrorMessage
                       name="tenantName"
@@ -484,7 +554,6 @@ const CompanySignUp: React.FC = () => {
                         type="text"
                         placeholder="example.com"
                         className="pl-10 w-full border border-gray-300 rounded p-2"
-                        disabled={isTenantCreated}
                       />
                       <Tooltip
                         message="Unique domain for your company (optional)"
@@ -508,7 +577,6 @@ const CompanySignUp: React.FC = () => {
                       rows={3}
                       className="w-full border border-gray-300 rounded p-2"
                       placeholder="Short description..."
-                      disabled={isTenantCreated}
                     />
                     <ErrorMessage
                       name="aboutUs"
@@ -517,16 +585,9 @@ const CompanySignUp: React.FC = () => {
                     />
                   </div>
 
-                  <Button
-                    type="submit"
-                    loading={isCreatingTenant || isSubmitting}
-                    fullWidth
-                  >
-                    {isTenantCreated
-                      ? 'Next' // If already created, just say "Next"
-                      : isCreatingTenant || isSubmitting
-                        ? 'Creating Tenant...'
-                        : 'Create Tenant'}
+                  {/* Next Button */}
+                  <Button type="submit" loading={isSubmitting} fullWidth>
+                    Next
                   </Button>
                 </Form>
               )}
@@ -534,6 +595,131 @@ const CompanySignUp: React.FC = () => {
           </motion.div>
         );
 
+      /** STEP 2: TENANT_ADDRESS */
+      case Step.TENANT_ADDRESS:
+        return (
+          <motion.div
+            key="tenant-address"
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
+            exit="exit"
+          >
+            <h2 className="text-xl font-semibold flex items-center gap-2 mb-4">
+              <FaBuilding /> Tenant: Address
+            </h2>
+            <Formik
+              initialValues={{
+                street: tenantData.address.street,
+                city: tenantData.address.city,
+                state: tenantData.address.state,
+                postalCode: tenantData.address.postalCode,
+                country: tenantData.address.country,
+              }}
+              validationSchema={TenantAddressSchema}
+              onSubmit={handleTenantAddressSubmit}
+            >
+              {({ isSubmitting }) => (
+                <Form className="space-y-4">
+                  <div>
+                    <label className="block font-medium mb-1">Street</label>
+                    <Field
+                      name="street"
+                      type="text"
+                      className="w-full border border-gray-300 rounded p-2"
+                      placeholder="123 Main St"
+                    />
+                    <ErrorMessage
+                      name="street"
+                      component="div"
+                      className="text-red-500 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-medium mb-1">City</label>
+                    <Field
+                      name="city"
+                      type="text"
+                      className="w-full border border-gray-300 rounded p-2"
+                      placeholder="Springfield"
+                    />
+                    <ErrorMessage
+                      name="city"
+                      component="div"
+                      className="text-red-500 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-medium mb-1">State</label>
+                    <Field
+                      name="state"
+                      type="text"
+                      className="w-full border border-gray-300 rounded p-2"
+                      placeholder="Illinois"
+                    />
+                    <ErrorMessage
+                      name="state"
+                      component="div"
+                      className="text-red-500 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-medium mb-1">Postal Code</label>
+                    <Field
+                      name="postalCode"
+                      type="text"
+                      className="w-full border border-gray-300 rounded p-2"
+                      placeholder="12345"
+                    />
+                    <ErrorMessage
+                      name="postalCode"
+                      component="div"
+                      className="text-red-500 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-medium mb-1">Country</label>
+                    <Field
+                      name="country"
+                      type="text"
+                      className="w-full border border-gray-300 rounded p-2"
+                      placeholder="USA"
+                    />
+                    <ErrorMessage
+                      name="country"
+                      component="div"
+                      className="text-red-500 text-sm"
+                    />
+                  </div>
+
+                  {/* Button row */}
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => prevStep()}
+                    >
+                      <FaArrowCircleLeft className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      type="submit"
+                      loading={isCreatingTenant || isSubmitting}
+                      fullWidth
+                    >
+                      {isTenantCreated
+                        ? 'Next'
+                        : isCreatingTenant || isSubmitting
+                        ? 'Creating Tenant...'
+                        : 'Create Tenant'}
+                    </Button>
+                  </div>
+                </Form>
+              )}
+            </Formik>
+          </motion.div>
+        );
+
+      /** STEP 3: REQUEST_CODE */
       case Step.REQUEST_CODE:
         return (
           <motion.div
@@ -590,7 +776,7 @@ const CompanySignUp: React.FC = () => {
 
                   <div className="flex justify-between mt-4">
                     <Button variant="secondary" onClick={() => prevStep()}>
-                      <FaArrowCircleLeft className="w-4 h-8" />
+                      <FaArrowCircleLeft className="w-4 h-4" />
                     </Button>
                   </div>
                 </Form>
@@ -599,6 +785,7 @@ const CompanySignUp: React.FC = () => {
           </motion.div>
         );
 
+      /** STEP 4: VERIFY_CODE */
       case Step.VERIFY_CODE:
         return (
           <motion.div
@@ -645,19 +832,13 @@ const CompanySignUp: React.FC = () => {
             )}
 
             <div className="flex justify-between mt-4">
-              <Button
-                variant="secondary"
-                onClick={() => setCurrentStep(Step.REQUEST_CODE)}
-              >
-                <FaArrowLeft className="w-4 h-6" />
+              <Button variant="secondary" onClick={() => setCurrentStep(Step.REQUEST_CODE)}>
+                <FaArrowLeft className="w-4 h-4" />
               </Button>
 
-              {/* If user isEmailVerified, show next button so they can proceed */}
+              {/* If user isEmailVerified, show "Next" button */}
               {isEmailVerified && (
-                <Button
-                  variant="primary"
-                  onClick={() => nextStep()}
-                >
+                <Button variant="primary" onClick={() => nextStep()}>
                   Next
                 </Button>
               )}
@@ -665,6 +846,7 @@ const CompanySignUp: React.FC = () => {
           </motion.div>
         );
 
+      /** STEP 5: USER_CREATION */
       case Step.USER_CREATION:
         return (
           <motion.div
@@ -739,8 +921,8 @@ const CompanySignUp: React.FC = () => {
                     {isUserCreated
                       ? 'Next'
                       : isRegisteringUser || isSubmitting
-                        ? 'Creating User...'
-                        : 'Create User'}
+                      ? 'Creating User...'
+                      : 'Create User'}
                   </Button>
 
                   <div className="flex justify-between mt-4">
@@ -757,6 +939,7 @@ const CompanySignUp: React.FC = () => {
           </motion.div>
         );
 
+      /** STEP 6: SUMMARY */
       case Step.SUMMARY:
         return (
           <motion.div
@@ -770,8 +953,8 @@ const CompanySignUp: React.FC = () => {
               <FaCheckCircle /> Registration Complete
             </h2>
             <p className="text-gray-300 mb-4">
-              Tenant <strong className="text-white">{tenantData.tenantName}</strong> 
-              {' '}has been created.<br />
+              Tenant <strong className="text-white">{tenantData.tenantName}</strong>{' '}
+              has been created.<br />
               The owner’s email{' '}
               <strong className="text-white">{email}</strong> is verified and a user account is now active.
             </p>
@@ -796,13 +979,15 @@ const CompanySignUp: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex text-gray-900">
       {/* Left “assistant” panel */}
-      <div className={clsx(
-        'hidden md:flex flex-col items-center justify-center w-2/5 p-8 relative',
-        bgClasses // e.g. "bg-gray-950 text-white"
-      )}>
+      <div
+        className={clsx(
+          'hidden md:flex flex-col items-center justify-center w-2/5 p-8 relative',
+          bgClasses // e.g. "bg-gray-950 text-white"
+        )}
+      >
         <motion.img
           src={avatar}
-          alt="Fae Avatar"
+          alt={`${name} Avatar`}
           className="w-36 h-36 rounded-full object-cover border-4 border-pink-500 mb-6"
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
@@ -821,7 +1006,7 @@ const CompanySignUp: React.FC = () => {
         </motion.h2>
         <AnimatePresence mode="wait">
           <motion.p
-            key={`fae-message-${currentStep}`}
+            key={`assistant-message-${currentStep}`}
             className={clsx(
               'text-center text-lg max-w-xs',
               messageColor // e.g. "text-white"
@@ -831,11 +1016,16 @@ const CompanySignUp: React.FC = () => {
             exit={{ opacity: 0, y: -10 }}
             transition={{ delay: 0.5 }}
           >
-            {faeMessage}
+            {assistantMessage}
           </motion.p>
         </AnimatePresence>
 
-        {/* Subtle gradient or any extra overlay */}
+        {/* Vital message always visible */}
+        <p className="absolute bottom-4 left-4 text-xs text-gray-300 italic">
+          Vital message: Keep your personal credentials safe!
+        </p>
+
+        {/* Subtle gradient overlay */}
         <div className="absolute inset-0 pointer-events-none" />
       </div>
 
@@ -847,16 +1037,13 @@ const CompanySignUp: React.FC = () => {
           </h1>
 
           {/* Toast */}
-          <Toast
-            show={toast.show}
-            message={toast.message}
-            onClose={closeToast}
-          />
+          <Toast show={toast.show} message={toast.message} onClose={closeToast} />
 
           {/* Step Indicators */}
           <div className="flex justify-between mb-8">
             {[
-              Step.TENANT_CREATION,
+              Step.TENANT_GENERAL,
+              Step.TENANT_ADDRESS,
               Step.REQUEST_CODE,
               Step.VERIFY_CODE,
               Step.USER_CREATION,
@@ -869,7 +1056,10 @@ const CompanySignUp: React.FC = () => {
                     currentStep >= step ? 'text-blue-400' : 'text-gray-400'
                   )}
                 >
-                  {step === Step.TENANT_CREATION && (
+                  {step === Step.TENANT_GENERAL && (
+                    <FaBuilding className="text-2xl" />
+                  )}
+                  {step === Step.TENANT_ADDRESS && (
                     <FaBuilding className="text-2xl" />
                   )}
                   {step === Step.REQUEST_CODE && (
@@ -886,7 +1076,8 @@ const CompanySignUp: React.FC = () => {
                   )}
 
                   <span className="mt-2 font-medium text-sm text-white/90">
-                    {step === Step.TENANT_CREATION && 'Tenant'}
+                    {step === Step.TENANT_GENERAL && 'General'}
+                    {step === Step.TENANT_ADDRESS && 'Address'}
                     {step === Step.REQUEST_CODE && 'Email'}
                     {step === Step.VERIFY_CODE && 'Code'}
                     {step === Step.USER_CREATION && 'User'}

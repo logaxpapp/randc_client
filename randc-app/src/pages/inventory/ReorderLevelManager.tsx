@@ -178,10 +178,32 @@ export default function ReorderLevelManager() {
 
   // ---------- Render ----------
   return (
-    <div className="max-w-6xl mx-auto p-4">
+    <section className="relative w-full min-h-screen overflow-hidden text-gray-800">
+    <div className="sticky top-0 z-10 bg-yellow-200 text-yellow-800 p-3 font-semibold shadow-md">
+      <strong>Vital Message:</strong> Manage your reorder requests efficiently!
+    </div>
+       {/* --- Top Wave Divider --- */}
+       <div className="absolute top-0 left-0 w-full rotate-180 leading-none z-0">
+        <svg
+          className="block w-full h-20 md:h-32 lg:h-48"
+          viewBox="0 0 1440 320"
+          preserveAspectRatio="none"
+        >
+          <path
+            fill="#3b82f6"
+            fillOpacity="1"
+            d="M0,224L48,224C96,224,192,224,288,197.3C384,171,480,117,576,96C672,75,768,85,864,112C960,139,1056,181,1152,170.7C1248,160,1344,96,1392,64L1440,32L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+          />
+        </svg>
+      </div>
+
+      {/* Background Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-blue-200 via-white to-lime-100 z-0" />
+
       {/* Toast Component */}
       <Toast show={toastVisible} message={toastMessage} onClose={handleCloseToast} />
-
+      <div className="relative z-10 p-6 min-h-screen">
+      <div className="max-w-7xl mx-auto">
       {/* Header */}
       <header className="flex justify-between items-center mb-6 bg-white p-4 rounded shadow mb-6">
         <h1 className="text-4xl font-extrabold text-center text-blue-800">
@@ -299,7 +321,23 @@ export default function ReorderLevelManager() {
           </motion.div>
         )}
       </AnimatePresence>
+       {/* --- Bottom Wave Divider --- */}
+       <div className="absolute bottom-0 w-full leading-none z-0">
+        <svg
+          className="block w-full h-20 md:h-32 lg:h-48"
+          viewBox="0 0 1440 320"
+          preserveAspectRatio="none"
+        >
+          <path
+            fill="#3b82f6"
+            fillOpacity="1"
+            d="M0,64L48,64C96,64,192,64,288,101.3C384,139,480,213,576,224C672,235,768,181,864,165.3C960,149,1056,171,1152,186.7C1248,203,1344,213,1392,218.7L1440,224L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"
+          />
+        </svg>
+      </div>
     </div>
+    </div>
+    </section>
   );
 }
 

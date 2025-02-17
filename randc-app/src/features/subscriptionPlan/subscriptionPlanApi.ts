@@ -2,25 +2,44 @@
 
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { customBaseQuery } from '../api/baseQuery';
+import { SubscriptionFeature } from '../subscriptionFeature/subscriptionFeatureApi';
+
+/**
+ * Interface for country-specific pricing.
+ */
+export interface CountryPricing {
+  countryCode: string; // e.g. "US", "NG", "CA"
+  currency: string;    // e.g. "USD", "NGN", "CAD"
+  price: number;       // price in local currency
+}
 
 /**
  * Client-side interface for subscription plans.
- * 'published' is a quick toggle, 'publishedAt' is the date or null.
  */
 export interface SubscriptionPlan {
   _id: string;
   name: string;
   description?: string;
   price: number;
-  features: string[];
+  features: SubscriptionFeature[];
   stripePlanId?: string;
   paystackPlanId?: string;
-  createdAt: string;      // ISO string
+  createdAt: string; // ISO string
 
-  // Quick boolean toggle
   published: boolean;
-  // Date or null if unpublished. We'll store as string here, but you can convert to Date if you like.
-  publishedAt?: string | null; 
+  publishedAt?: string | null;
+
+  countryPricing: CountryPricing[];
+}
+
+/**
+ * Response shape for getTenantPriceForPlan
+ */
+export interface TenantPriceResponse {
+  success: boolean;
+  price: number;
+  currency: string;
+  planName: string;
 }
 
 export const subscriptionPlanApi = createApi({
@@ -33,7 +52,13 @@ export const subscriptionPlanApi = createApi({
      */
     createPlan: builder.mutation<
       SubscriptionPlan,
-      { name: string; price: number; description?: string; features?: string[] }
+      {
+        name: string;
+        price: number;
+        description?: string;
+        features?: string[];
+        countryPricing?: CountryPricing[];
+      }
     >({
       query: (body) => ({
         url: '/subscription-plans',
@@ -71,7 +96,7 @@ export const subscriptionPlanApi = createApi({
     }),
 
     /**
-     * 4) Update plan (e.g. name, price, description)
+     * 4) Update plan
      */
     updatePlan: builder.mutation<
       SubscriptionPlan,
@@ -107,12 +132,12 @@ export const subscriptionPlanApi = createApi({
      */
     addFeature: builder.mutation<
       SubscriptionPlan,
-      { planId: string; feature: string }
+      { planId: string; featureId: string }
     >({
-      query: ({ planId, feature }) => ({
+      query: ({ planId, featureId }) => ({
         url: `/subscription-plans/${planId}/add-feature`,
         method: 'PUT',
-        body: { feature },
+        body: { featureId },
       }),
       invalidatesTags: (result, error, { planId }) => [
         { type: 'SubscriptionPlan', id: planId },
@@ -138,7 +163,6 @@ export const subscriptionPlanApi = createApi({
 
     /**
      * 8) Publish or unpublish plan
-     *    - Pass { planId, publish } in the body
      */
     publishPlan: builder.mutation<
       SubscriptionPlan,
@@ -146,13 +170,21 @@ export const subscriptionPlanApi = createApi({
     >({
       query: ({ planId, publish }) => ({
         url: `/subscription-plans/${planId}/publish`,
-        method: 'PUT',
+        method: 'PATCH',
         body: { publish },
       }),
       invalidatesTags: (result, error, { planId }) => [
         { type: 'SubscriptionPlan', id: planId },
         { type: 'SubscriptionPlan', id: 'LIST' },
       ],
+    }),
+
+    /**
+     * 9) Get tenant-specific price for a plan
+     *    GET /subscription-plans/:planId/tenant-price
+     */
+    getTenantPriceForPlan: builder.query<TenantPriceResponse, string>({
+      query: (planId) => `/subscription-plans/${planId}/tenant-price`,
     }),
   }),
 });
@@ -165,6 +197,8 @@ export const {
   useDeletePlanMutation,
   useAddFeatureMutation,
   useRemoveFeatureMutation,
-  // The new one:
   usePublishPlanMutation,
+
+  // The new one:
+  useGetTenantPriceForPlanQuery,
 } = subscriptionPlanApi;

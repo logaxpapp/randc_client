@@ -19,8 +19,10 @@ function getProfileRoute(user: any): string {
     return '/admin/dashboard/profile';
   } else if (user.roles?.includes('CLEANER')) {
     return '/cleaner/dashboard/profile';
+  } else if (user.roles?.includes('SEEKER')) {
+    return '/seeker/dashboard/profile';
   } else {
-    return '/user/dashboard/profile';
+    return '/';
   }
 }
 
@@ -31,7 +33,7 @@ function getSettingsRoute(user: any): string {
   } else if (user.roles?.includes('CLEANER')) {
     return '/cleaner/dashboard/settings';
   } else {
-    return '/user/dashboard/settings';
+    return '/seeker/dashboard/settings';
   }
 }
 
@@ -62,22 +64,17 @@ const Header: React.FC = () => {
   const profileRoute = getProfileRoute(user);
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-gradient-to-r from-indigo-700 via-indigo-800 to-indigo-900 text-white shadow-md dark:bg-gray-800">
+    <header className="sticky top-0 z-50 w-full bg-gray-50 text-gray-900 shadow-md dark:bg-gray-800">
       <div className="max-w-screen-xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* LEFT: Mobile menu button + Brand */}
         <div className="flex items-center space-x-3">
           <button
-            className="md:hidden p-2 rounded hover:bg-indigo-800 focus:outline-none"
+            className="md:hidden p-2 rounded hover:bg-gray-200 focus:outline-none"
             aria-label="Toggle Menu"
           >
             <FaBars className="w-6 h-6" />
           </button>
-          <Link
-            to="/"
-            className="text-2xl font-bold tracking-wide uppercase hover:text-indigo-200"
-          >
-            R&C Cleaning
-          </Link>
+       
         </div>
 
         {/* CENTER: Search bar */}
@@ -95,6 +92,7 @@ const Header: React.FC = () => {
                 text-gray-800
                 focus:outline-none
                 focus:ring-2 focus:ring-indigo-300
+                border border-gray-300 dark:border-gray-700
               "
             />
             <AnimatePresence>
@@ -132,17 +130,17 @@ const Header: React.FC = () => {
           {/* Theme Toggle */}
           <button
             onClick={handleThemeClick}
-            className="p-2 rounded hover:bg-indigo-800 focus:outline-none"
+            className="p-2 rounded hover:text-indigo-200 focus:outline-none"
             aria-label="Toggle Theme"
           >
-            {theme === 'light' ? <FaMoon className="text-white" /> : <FaSun className="text-yellow-300" />}
+            {theme === 'light' ? <FaMoon className=" hover:text-gray-700" /> : <FaSun className="text-yellow-500 hover:text-amber-800 font-bold" />}
           </button>
 
           {/* Notifications */}
           <div className="relative">
             <button
               onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-              className="p-2 rounded hover:bg-indigo-800 focus:outline-none"
+              className="p-2 rounded hover:bg-gray-200 focus:outline-none"
               aria-label="Notifications"
               aria-haspopup="true"
               aria-expanded={isNotificationsOpen}
@@ -170,7 +168,7 @@ const Header: React.FC = () => {
           <div className="relative">
             <button
               onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className="flex items-center p-2 rounded hover:bg-indigo-800 focus:outline-none"
+              className="flex items-center p-2 rounded hover:bg-gray-200 focus:outline-none"
               aria-label="User Profile"
               aria-haspopup="true"
               aria-expanded={isProfileOpen}
@@ -190,7 +188,7 @@ const Header: React.FC = () => {
                   initial={{ opacity: 0, translateY: -10 }}
                   animate={{ opacity: 1, translateY: 0 }}
                   exit={{ opacity: 0, translateY: -10 }}
-                  className="absolute right-0 mt-2 w-48 bg-white text-gray-700 border border-gray-300 rounded-md shadow-lg z-50"
+                  className="absolute right-0 mt-2 w-48 bg-white text-gray-700 border border-gray-300 rounded-md shadow-lg z-100"
                 >
                   {/* A link to the user profile page (dynamically assigned) */}
                   <Link
@@ -221,7 +219,7 @@ const Header: React.FC = () => {
       <div className="bg-yellow-400 text-white text-sm py-1 px-4">
         <div className="max-w-screen-xl mx-auto">
           <p className="font-semibold">
-            Special Message: System maintenance scheduled for <strong>Dec 10</strong>.
+           
           </p>
         </div>
       </div>
